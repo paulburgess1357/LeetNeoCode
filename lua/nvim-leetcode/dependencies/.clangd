@@ -1,0 +1,27 @@
+CompileFlags:
+  Add: [
+      -std=c++23,
+      -I./include,
+      -Wall,
+      -Wextra,
+      -Wpedantic,
+      -Weverything,
+      -Wshadow,
+      -Wconversion,
+      -Wsign-conversion,
+      -Wundef,
+      -Wmissing-include-dirs,
+      -Wfloat-conversion,
+      -Wformat=2,
+      -Wunreachable-code,
+      -Wdouble-promotion,
+      -Wno-c++98-compat,
+      #-Werror,
+      #-Wno-sign-compare,
+      #-Wno-sign-conversion,
+      #-Wno-shorten-64-to-32,
+    ]
+
+Diagnostics:
+  ClangTidy:
+    FastCheckFilter: "None"
