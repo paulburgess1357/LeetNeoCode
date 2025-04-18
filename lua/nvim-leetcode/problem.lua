@@ -226,7 +226,7 @@ function M.open_problem(number)
 		vim.cmd("enew")
 		local buf = vim.api.nvim_get_current_buf()
 		vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
-		vim.api.nvim_buf_set_option(buf, "bufhidden", "hide") -- Changed from "wipe" to "hide"
+		vim.api.nvim_buf_set_option(buf, "bufhidden", "hide")
 
 		-- Format problem text
 		local formatted = formatter.format_problem_text(content_html)
@@ -240,21 +240,15 @@ function M.open_problem(number)
 		formatter.setup_highlighting()
 
 		-- Name the buffer
-		local desc_buf_name = string.format("LC%d %s", num, title)
-		if vim.fn.bufnr(desc_buf_name) == -1 then
-			vim.api.nvim_buf_set_name(buf, desc_buf_name)
+		local buf_name = string.format("LC%d %s %d", num, title, _G.leetcode_opened[slug])
+		if vim.fn.bufnr(buf_name) == -1 then
+			vim.api.nvim_buf_set_name(buf, buf_name)
 		end
 	end
 
 	-- Open the solution stub in a vertical split
 	if snippets then
 		vim.cmd("vsplit " .. vim.fn.fnameescape(fpath))
-
-		-- Set consistent buffer name for solution
-		local buf_num = vim.api.nvim_get_current_buf()
-		local sol_buf_name = string.format("LC%d Solution %d", num, version)
-		vim.api.nvim_buf_set_name(buf_num, sol_buf_name)
-
 		vim.api.nvim_buf_set_option(0, "filetype", C.default_language)
 
 		-- Resize description pane
