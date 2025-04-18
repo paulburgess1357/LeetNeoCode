@@ -226,7 +226,7 @@ function M.open_problem(number)
 		vim.cmd("enew")
 		local buf = vim.api.nvim_get_current_buf()
 		vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
-		vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+		vim.api.nvim_buf_set_option(buf, "bufhidden", "hide")
 
 		-- Format problem text
 		local formatted = formatter.format_problem_text(content_html)
