@@ -51,7 +51,7 @@ function M.setup(user_config)
 
 		-- Create buffer and set content
 		local buf = vim.api.nvim_create_buf(false, true)
-		vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "🧩 Starting Leetcode..." })
+		vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "🧩 Running Leetcode Command..." })
 
 		-- Apply highlight
 		local ns_id = vim.api.nvim_create_namespace("leetcode_notification")
