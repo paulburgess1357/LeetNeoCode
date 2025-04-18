@@ -119,7 +119,7 @@ function M.open_problem(number)
 			if vim.fn.isdirectory(path) == 1 then
 				-- Found a valid directory
 				dep_dir = path
-				vim.notify("Using dependencies from: " .. path, vim.log.levels.INFO)
+				-- vim.notify("Using dependencies from: " .. path, vim.log.levels.INFO)
 				break
 			end
 		end
