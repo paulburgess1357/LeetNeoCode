@@ -109,13 +109,17 @@ function M.open_problem(number)
 			vim.fn.expand("~/.local/share/nvim/lazy/nvim-leetcode/lua/nvim-leetcode/dependencies"),
 			-- Check Packer path
 			vim.fn.expand("~/.local/share/nvim/site/pack/packer/start/nvim-leetcode/lua/nvim-leetcode/dependencies"),
+			-- Check local repo path
+			vim.fn.expand("~/Repos/nvim-leetcode/lua/nvim-leetcode/dependencies"),
 			-- Check built-in module path (fallback)
 			C.get_dependencies_dir(),
 		}
 
 		for _, path in ipairs(plugin_paths) do
 			if vim.fn.isdirectory(path) == 1 then
+				-- Found a valid directory
 				dep_dir = path
+				vim.notify("Using dependencies from: " .. path, vim.log.levels.INFO)
 				break
 			end
 		end
@@ -138,14 +142,34 @@ function M.open_problem(number)
 			local dst = prob_dir .. "/" .. fname
 
 			-- Check if source file exists
-			if vim.fn.filereadable(src) == 1 and vim.fn.filereadable(dst) == 0 then
-				-- Create an absolute symlink
-				vim.fn.system({ "ln", "-s", src, dst })
-
-				-- Verify symlink was created successfully
-				if vim.v.shell_error ~= 0 then
-					vim.notify("Failed to create symlink for " .. fname, vim.log.levels.WARN)
+			if vim.fn.filereadable(src) == 1 then
+				-- Remove existing file if it exists
+				if vim.fn.filereadable(dst) == 1 then
+					vim.fn.delete(dst)
 				end
+
+				-- Create an absolute symlink using direct shell command
+				local cmd = string.format("ln -sf '%s' '%s'", src, dst)
+				local success, err, code = os.execute(cmd)
+
+				if not success then
+					vim.notify("Failed to create symlink: " .. (err or "Unknown error"), vim.log.levels.WARN)
+
+					-- Fallback to direct copy
+					local content = vim.fn.readfile(src)
+					local write_ok = pcall(vim.fn.writefile, content, dst)
+
+					if not write_ok then
+						vim.notify(
+							"Failed to copy " .. fname .. ". File dependencies may be missing.",
+							vim.log.levels.ERROR
+						)
+					else
+						vim.notify("Copied " .. fname .. " instead of symlink", vim.log.levels.INFO)
+					end
+				end
+			else
+				vim.notify("Source file not found: " .. src, vim.log.levels.WARN)
 			end
 		end
 	end
