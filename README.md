@@ -1,6 +1,6 @@
 # nvim-leetcode
 
-A lightweight, distraction-free Neovim plugin for viewing and solving LeetCode problems in your favorite editor. This focused plugin provides clean problem descriptions with syntax highlighting and solution templates, letting you concentrate on algorithmic thinking without leaving your editor workflow.
+A lightweight, distraction-free Neovim plugin for viewing and writing LeetCode code in your favorite editor.
 
 **Note:** This plugin is designed for offline problem viewing and solution development only. It does not execute code against LeetCode test cases or support premium problems. For a more feature-rich alternative with test execution capabilities, consider [leetcode.nvim](https://github.com/kawre/leetcode.nvim).
 
