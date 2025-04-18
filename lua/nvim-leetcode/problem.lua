@@ -100,9 +100,34 @@ function M.open_problem(number)
 		vim.fn.mkdir(prob_dir, "p")
 	end
 
-	-- Symlink shared configs and header from plugin dependencies directory
+	-- Get the absolute path to the dependencies directory
+	local dep_dir
 	do
-		local dep_dir = C.get_dependencies_dir()
+		-- Find the plugin installation path
+		local plugin_paths = {
+			-- Check LazyVim path first
+			vim.fn.expand("~/.local/share/nvim/lazy/nvim-leetcode/lua/nvim-leetcode/dependencies"),
+			-- Check Packer path
+			vim.fn.expand("~/.local/share/nvim/site/pack/packer/start/nvim-leetcode/lua/nvim-leetcode/dependencies"),
+			-- Check built-in module path (fallback)
+			C.get_dependencies_dir(),
+		}
+
+		for _, path in ipairs(plugin_paths) do
+			if vim.fn.isdirectory(path) == 1 then
+				dep_dir = path
+				break
+			end
+		end
+
+		if not dep_dir then
+			vim.notify("Could not find dependencies directory. Symlinks may not work.", vim.log.levels.WARN)
+			dep_dir = C.get_dependencies_dir()
+		end
+	end
+
+	-- Symlink shared configs and header files with absolute paths
+	do
 		for _, fname in ipairs({
 			"lc_includes.h",
 			".clangd",
@@ -111,8 +136,16 @@ function M.open_problem(number)
 		}) do
 			local src = dep_dir .. "/" .. fname
 			local dst = prob_dir .. "/" .. fname
+
+			-- Check if source file exists
 			if vim.fn.filereadable(src) == 1 and vim.fn.filereadable(dst) == 0 then
+				-- Create an absolute symlink
 				vim.fn.system({ "ln", "-s", src, dst })
+
+				-- Verify symlink was created successfully
+				if vim.v.shell_error ~= 0 then
+					vim.notify("Failed to create symlink for " .. fname, vim.log.levels.WARN)
+				end
 			end
 		end
 	end
