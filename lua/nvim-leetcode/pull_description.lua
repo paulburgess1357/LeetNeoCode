@@ -8,6 +8,14 @@ local function graphql_request(slug)
     query questionContent($titleSlug: String!) {
       question(titleSlug: $titleSlug) {
         content
+        difficulty
+        topicTags {
+          name
+          slug
+        }
+        stats
+        title
+        questionFrontendId
       }
     }
   ]]
@@ -33,14 +41,27 @@ local function graphql_request(slug)
 	if not ok or not decoded.data or not decoded.data.question then
 		return nil
 	end
-	return decoded.data.question.content
+	return decoded.data.question
 end
 
 local M = {}
 
--- Fetch HTML description for given slug
+-- Fetch HTML description and metadata for given slug
 function M.fetch_description(slug)
-	return graphql_request(slug)
+	local question = graphql_request(slug)
+	if not question then
+		return nil
+	end
+
+	-- Return both the content and metadata
+	return {
+		content = question.content,
+		difficulty = question.difficulty,
+		topicTags = question.topicTags,
+		stats = question.stats,
+		title = question.title,
+		questionId = question.questionFrontendId,
+	}
 end
 
 return M

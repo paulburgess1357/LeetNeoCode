@@ -18,6 +18,13 @@ local M = {
 	notify_wait_interval = 10,
 
 	description_split = 0.35,
+
+	-- Features configuration
+	include_problem_metadata = true, -- Include problem metadata
+	include_leetcode_tags = true, -- Include LeetCode tags
+	include_user_tags = true, -- Include user tags section
+	metadata_at_bottom = true, -- Put metadata at the bottom of the file
+	metadata_comment_style = "multi", -- Use multiline comment style
 }
 
 -- Find path to the dependencies directory

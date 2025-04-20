@@ -40,6 +40,34 @@ local function load_cache(path)
 end
 
 -- -----------------------------------------------------------------------------
+-- Helper: format tags and metadata for solution file
+-- -----------------------------------------------------------------------------
+local function format_problem_metadata(metadata)
+	return "* Problem: LC#" .. metadata.questionId .. " " .. metadata.title
+end
+
+local function format_problem_difficulty(metadata)
+	return "* Difficulty: " .. metadata.difficulty
+end
+
+local function format_problem_tags(tags)
+	if not tags or #tags == 0 then
+		return "* LC Tags: None"
+	end
+
+	local tag_names = {}
+	for _, tag in ipairs(tags) do
+		table.insert(tag_names, tag.name)
+	end
+
+	return "* LC Tags: " .. table.concat(tag_names, ", ")
+end
+
+local function create_user_tags_section()
+	return "* User Tags:"
+end
+
+-- -----------------------------------------------------------------------------
 -- Main: fetch & open a problem's description + code stub
 -- -----------------------------------------------------------------------------
 local M = {}
@@ -174,12 +202,12 @@ function M.open_problem(number)
 		end
 	end
 
-	-- 5) Fetch description & stub
-	local content_html = ""
+	-- 5) Fetch description, metadata & stub
+	local problem_data = {}
 	do
 		local ok, result = pcall(pull_desc.fetch_description, slug)
-		content_html = ok and type(result) == "string" and result or ""
-		if content_html == "" then
+		problem_data = ok and type(result) == "table" and result or { content = "" }
+		if problem_data.content == "" then
 			vim.notify("Could not fetch description for #" .. num, vim.log.levels.WARN)
 		end
 	end
@@ -206,12 +234,36 @@ function M.open_problem(number)
 	local fname = string.format("Solution_%d.%s", version, C.default_language)
 	local fpath = prob_dir .. "/" .. fname
 
-	-- 7) Save stub to file
+	-- 7) Save stub to file with metadata
 	if snippets then
 		local f = io.open(fpath, "w")
 		if f then
+			-- Write the solution template first
 			f:write('#include "lc_includes.h"\n\n')
 			f:write(snippets)
+			f:write("\n\n")
+
+			-- Add comment with hidden fold markers
+			-- Using a fold marker style that gets hidden within the comment
+			f:write("\n")
+			f:write("/*{{{")
+
+			-- Add problem metadata to comment
+			if problem_data.title and problem_data.difficulty and problem_data.questionId then
+				f:write("\n" .. format_problem_metadata(problem_data))
+				f:write("\n" .. format_problem_difficulty(problem_data))
+			end
+
+			-- Add LeetCode tags to comment
+			if problem_data.topicTags then
+				f:write("\n" .. format_problem_tags(problem_data.topicTags))
+			end
+
+			-- Add user tags section to comment
+			f:write("\n" .. create_user_tags_section())
+
+			f:write("\n}}}*/")
+
 			f:close()
 		end
 	end
@@ -222,14 +274,14 @@ function M.open_problem(number)
 	-- 8) Open tab + splits
 	vim.cmd("tabnew")
 
-	if content_html ~= "" then
+	if problem_data.content ~= "" then
 		vim.cmd("enew")
 		local buf = vim.api.nvim_get_current_buf()
 		vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
 		vim.api.nvim_buf_set_option(buf, "bufhidden", "hide")
 
 		-- Format problem text
-		local formatted = formatter.format_problem_text(content_html)
+		local formatted = formatter.format_problem_text(problem_data.content)
 		vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(formatted, "\n", { plain = true }))
 
 		-- Buffer options
@@ -251,6 +303,9 @@ function M.open_problem(number)
 		vim.cmd("vsplit " .. vim.fn.fnameescape(fpath))
 		vim.api.nvim_buf_set_option(0, "filetype", C.default_language)
 
+		-- Set fold method to marker and ensure folds are closed by default
+		vim.cmd("setlocal foldmethod=marker")
+
 		-- Resize description pane
 		local split_frac = C.description_split or 0.5
 		local total_cols = vim.o.columns
@@ -259,6 +314,12 @@ function M.open_problem(number)
 		local wins = vim.api.nvim_tabpage_list_wins(0)
 		local desc_win = (wins[1] == sol_win) and wins[2] or wins[1]
 		vim.api.nvim_win_set_width(desc_win, desc_cols)
+
+		-- Ensure folds are closed
+		-- We need to give a short delay to allow the fold markers to be processed
+		vim.defer_fn(function()
+			vim.cmd("normal! zM")
+		end, 100)
 	end
 
 	vim.notify(string.format("Loaded problem #%d: %s (v%d)", num, title, version), vim.log.levels.INFO)

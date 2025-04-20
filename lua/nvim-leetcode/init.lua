@@ -97,6 +97,38 @@ function M.setup(user_config)
 			return {}
 		end,
 	})
+
+	-- Set up syntax highlighting for the metadata comment
+	vim.cmd([[
+		" Highlight groups for problem metadata and comments
+		highlight default link LeetCodeMetadata Identifier
+		highlight default link LeetCodeTag Keyword
+		highlight default link LeetCodeUserTag String
+
+		" Syntax highlighting for metadata lines in the comment
+		syntax match LeetCodeMetadataLine /^\* Problem:.*$/ contained
+		syntax match LeetCodeDifficultyLine /^\* Difficulty:.*$/ contained
+		syntax match LeetCodeTagsLine /^\* LC Tags:.*$/ contained
+		syntax match LeetCodeUserTagsLine /^\* User Tags:.*$/ contained
+
+		highlight LeetCodeMetadataLine guifg=#d8a657 gui=bold
+		highlight LeetCodeDifficultyLine guifg=#a9b665 gui=bold
+		highlight LeetCodeTagsLine guifg=#7daea3
+		highlight LeetCodeUserTagsLine guifg=#e78a4e
+
+		" Autocommands for LeetCode solution files
+		augroup LeetCodeSolutions
+			autocmd!
+			" Set fold method for CPP files in LeetCode solutions directory
+			autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp setlocal foldmethod=marker
+			" Close all folds when opening a solution file
+			autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp normal! zM
+			" Hide fold markers to make them less visually distracting
+			autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp syntax match Comment /{\{3}/ conceal
+			autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp syntax match Comment /}\{3}/ conceal
+			autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp setlocal conceallevel=2
+		augroup END
+	]])
 end
 
 return M
