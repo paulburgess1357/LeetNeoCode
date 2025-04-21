@@ -86,7 +86,7 @@ local function process_entities(text)
 	end)
 end
 
--- Protect inline <code>…</code>
+-- Protect inline <code>…</code> and image placeholders
 local function process_code_blocks(text)
 	local blocks, id = {}, 0
 	local out = text:gsub("<code>(.-)</code>", function(c)
@@ -95,8 +95,15 @@ local function process_code_blocks(text)
 		blocks[ph] = c -- raw code, no backticks
 		return ph
 	end)
+
+	-- Also protect any image placeholders
+	for placeholder in out:gmatch("___IMAGE_PLACEHOLDER_%d+___") do
+		blocks[placeholder] = placeholder
+	end
+
 	return out, blocks
 end
+
 local function restore_code_blocks(text, blocks)
 	for ph, code in pairs(blocks) do
 		text = text:gsub(ph, code)
@@ -104,7 +111,7 @@ local function restore_code_blocks(text, blocks)
 	return text
 end
 
--- Strip HTML + multi-digit <sup> + <sub>
+-- Strip HTML + multi-digit <sup> + <sub> while preserving image placeholders
 local function process_html_tags(text)
 	local t, blocks = process_code_blocks(text)
 	-- multi-digit sup
@@ -134,6 +141,14 @@ local function process_html_tags(text)
 		:gsub("<h%d>(.-)</h%d>", "\n%1\n")
 		:gsub("<p>(.-)</p>", "%1\n\n")
 		:gsub("<code>(.-)</code>", "%1")
+		:gsub("<img.-/>", function(match)
+			-- Keep image placeholders intact
+			for placeholder in match:gmatch("___IMAGE_PLACEHOLDER_%d+___") do
+				return placeholder
+			end
+			-- If no placeholder is found, just remove the tag
+			return ""
+		end)
 		:gsub("<[^>]+>", "")
 	t = restore_code_blocks(t, blocks)
 	-- subscript
@@ -206,6 +221,7 @@ function M.setup_highlighting()
     syntax match ProblemNumber      /\<\d\+\>/
     syntax match ProblemSuperscript /[⁰¹²³⁴⁵⁶⁷⁸⁹]/
     syntax match ProblemVariable    /nums\|\<n\>\|target\|Node\.val/
+    syntax match ProblemImagePlaceholder /___IMAGE_PLACEHOLDER_\d\+___/
 
     setlocal conceallevel=2 concealcursor=nc
     setlocal wrap
@@ -224,6 +240,7 @@ function M.setup_highlighting()
     highlight ProblemNumber        guifg=#d8a657 gui=bold
     highlight ProblemSuperscript   guifg=#d8a657
     highlight ProblemVariable      guifg=#7daea3
+    highlight ProblemImagePlaceholder guifg=#504945
   ]])
 end
 

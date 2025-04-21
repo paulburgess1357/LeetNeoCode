@@ -8,6 +8,7 @@ local M = {
 	cache_file = "leetcode_cache.json",
 	cache_expiry_days = 14,
 	solutions_subdir = "solutions",
+	images_subdir = "images",
 
 	API_URL = "https://leetcode.com/api/problems/all/",
 
@@ -25,6 +26,10 @@ local M = {
 	include_user_tags = true, -- Include user tags section
 	metadata_at_bottom = true, -- Put metadata at the bottom of the file
 	metadata_comment_style = "multi", -- Use multiline comment style
+
+	-- Image configuration
+	enable_images = true, -- Enable image display in problems
+	image_render_delay = 100, -- Delay in ms before rendering images (helps with layout)
 }
 
 -- Find path to the dependencies directory
@@ -52,6 +57,12 @@ function M.ensure_cache_dirs()
 	local sol_dir = M.cache_dir .. "/" .. M.solutions_subdir
 	if vim.fn.isdirectory(sol_dir) == 0 then
 		vim.fn.mkdir(sol_dir, "p")
+	end
+
+	-- Create images subdir
+	local img_dir = M.cache_dir .. "/" .. M.images_subdir
+	if vim.fn.isdirectory(img_dir) == 0 then
+		vim.fn.mkdir(img_dir, "p")
 	end
 end
 

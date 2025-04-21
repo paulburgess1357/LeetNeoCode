@@ -2,6 +2,7 @@
 local vim = vim
 local C = require("nvim-leetcode.config")
 local format = require("nvim-leetcode.format")
+local images = require("nvim-leetcode.images")
 
 local M = {}
 
@@ -12,8 +13,17 @@ function M.open_description_buffer(problem_data, num, title, slug)
 	vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
 	vim.api.nvim_buf_set_option(buf, "bufhidden", "hide")
 
+	-- Get image cache directory
+	local img_cache_dir = images.get_image_cache_dir(num, title, slug)
+
+	-- Download images and get their paths
+	local image_files = images.download_all_images(problem_data.content, img_cache_dir)
+
+	-- Replace image tags with placeholders
+	local content_with_placeholders, placeholders = images.prepare_content_with_image_placeholders(problem_data.content)
+
 	-- Format problem text
-	local formatted = format.format_problem_text(problem_data.content)
+	local formatted = format.format_problem_text(content_with_placeholders)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(formatted, "\n", { plain = true }))
 
 	-- Buffer options
@@ -30,17 +40,46 @@ function M.open_description_buffer(problem_data, num, title, slug)
 		vim.api.nvim_buf_set_name(buf, buf_name)
 	end
 
-	-- Render test image at the very bottom (Kitty graphics protocol)
-	local img_path = vim.fn.expand("~/.cache/nvim-leetcode/images/addtwonumber1.jpg")
-	if vim.fn.filereadable(img_path) == 1 then
-		local win = vim.api.nvim_get_current_win()
-		local img = require("image").from_file(img_path, {
-			window = win,
-			buffer = buf,
-			with_virtual_padding = true,
-			inline = false,
-		})
-		img:render()
+	-- Find and render images at their placeholder positions
+	local win = vim.api.nvim_get_current_win()
+	local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+
+	for i, line in ipairs(lines) do
+		for placeholder_idx, placeholder in ipairs(placeholders) do
+			if line:find(placeholder, 1, true) then
+				-- If we have an image for this placeholder
+				if image_files[placeholder_idx] then
+					-- Split the line at the placeholder
+					local parts = vim.split(line, placeholder, { plain = true })
+
+					-- Update the current line to be just the content before the placeholder
+					if parts[1] ~= "" then
+						vim.api.nvim_buf_set_lines(buf, i - 1, i, false, { parts[1] })
+					end
+
+					-- Render the image
+					local image_line = i
+					if parts[1] ~= "" then
+						-- If there was content before the placeholder, add a line for the image
+						vim.api.nvim_buf_set_lines(buf, i, i, false, { "" })
+						image_line = i
+						i = i + 1
+					end
+
+					images.render_image(buf, win, image_files[placeholder_idx].path, image_line - 1)
+
+					-- Add content after the placeholder as a new line if it's not empty
+					if parts[2] and parts[2] ~= "" then
+						vim.api.nvim_buf_set_lines(buf, i, i, false, { parts[2] })
+						i = i + 1
+					end
+
+					-- Refresh lines after modifications
+					lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+					break
+				end
+			end
+		end
 	end
 
 	return buf
