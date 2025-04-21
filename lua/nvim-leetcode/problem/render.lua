@@ -38,42 +38,42 @@ function M.open_description_buffer(problem_data, num, title, slug)
 	local rendered = {}
 	local win = vim.api.nvim_get_current_win()
 
-	for idx, ph in ipairs(placeholders) do
+	-- walk bottom‑up so inserts don’t shift later placeholders
+	for idx = #placeholders, 1, -1 do
+		local ph = placeholders[idx]
 		local img = image_files[idx]
 		if not img then
 			break
 		end
 
-		-- re‑grab the up‑to‑date buffer lines
 		local all = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 		for ln, text in ipairs(all) do
 			local s, e = text:find(ph, 1, true)
 			if s then
-				-- split off before/after
 				local before = text:sub(1, s - 1)
 				local after = text:sub(e + 1)
 				local new_lines = {}
 
 				if before ~= "" then
-					new_lines[#new_lines + 1] = before
+					table.insert(new_lines, before)
 				end
 
-				-- blank line for the image
+				-- blank line to host the image
 				local img_offset = #new_lines
-				new_lines[#new_lines + 1] = ""
+				table.insert(new_lines, "")
 
 				if after ~= "" then
-					new_lines[#new_lines + 1] = after
+					table.insert(new_lines, after)
 				end
 
-				-- replace the placeholder line with our new lines
+				-- replace the placeholder with our block
 				vim.api.nvim_buf_set_lines(buf, ln - 1, ln, false, new_lines)
 
-				-- record where to re‑render later
+				-- compute the exact row for rendering
 				local render_row = (ln - 1) + img_offset
 				table.insert(rendered, { row = render_row, path = img.path })
 
-				-- render now
+				-- render immediately
 				images.render_image(buf, win, img.path, render_row)
 				break
 			end
