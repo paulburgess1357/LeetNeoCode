@@ -8,16 +8,14 @@ local C = require("nvim-leetcode.config")
 -- ────────────────────────────────────────────────────────────────────────────
 -- Layout & wrapping parameters
 -- ────────────────────────────────────────────────────────────────────────────
-local split_ratio = C.description_split or 0.35 -- for separators
-local wrap_enabled = C.enable_custom_wrap ~= false -- default true
+local split_ratio = C.description_split or 0.35
+local wrap_enabled = C.enable_custom_wrap ~= false
 local wrap_ratio = (C.description_split or 0.35) - (C.custom_wrap_offset or 0.10)
-
 if wrap_ratio < 0.05 then
 	wrap_ratio = 0.05
-end -- sane lower bound
+end
 
-local main_sep_ratio = 0.50
-local example_sep_ratio = 0.25
+local main_sep_ratio, example_sep_ratio = 0.50, 0.25
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- HTML entities and sub/superscripts
@@ -141,7 +139,7 @@ local function process_html_tags(text)
 		:gsub("<p>(.-)</p>", "%1\n\n")
 		:gsub("<code>(.-)</code>", "%1")
 
-	t = t:gsub("<img[^>]-/>", ""):gsub("<[^>]+>", "") -- drop images & any tag
+	t = t:gsub("<img[^>]-/>", ""):gsub("<[^>]+>", "")
 	t = restore_code_blocks(t, blocks)
 
 	return t:gsub("<sub>(.-)</sub>", function(c)
@@ -153,8 +151,7 @@ end
 
 local function process_leetcode_patterns(text)
 	local t = text:gsub("\n\n\n+", "\n\n")
-	local cols = vim.o.columns or 80
-	local w = math.floor(cols * split_ratio)
+	local cols, w = vim.o.columns or 80, math.floor((vim.o.columns or 80) * split_ratio)
 	local main_w, ex_w = math.floor(w * main_sep_ratio), math.floor(w * example_sep_ratio)
 	local main_s, ex_s = string.rep("-", main_w), string.rep("-", ex_w)
 
@@ -208,8 +205,8 @@ end
 local function wrap_paragraph(line, width)
 	local out, remain = {}, line
 	while #remain > width do
-		local cut = remain:sub(1, width):match(".*()%s+") -- last space ≤ width
-		if not cut or cut < width * 0.3 then
+		local cut = remain:sub(1, width):match(".*()%s+") or width
+		if cut < width * 0.3 then
 			cut = width
 		end
 		local segment = remain:sub(1, cut):gsub("%s+$", "")
@@ -241,12 +238,17 @@ function M.format_problem_text(html)
 	if type(html) ~= "string" or html == "" then
 		return ""
 	end
+
 	local t = process_entities(html)
 	t = process_html_tags(t)
 	t = process_leetcode_patterns(t)
 	if wrap_enabled then
 		t = apply_custom_wrap(t)
 	end
+
+	-- ▸ Ensure **exactly one** trailing newline
+	t = t:gsub("\n+$", "\n")
+
 	return t
 end
 
