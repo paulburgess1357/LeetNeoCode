@@ -1,15 +1,27 @@
+-- lua/nvim‑leetcode/format/html.lua
 -- Problem text formatter module
 local M = {}
 
--- Pull in the shared LeetCode config
+-- Load shared configuration
 local C = require("nvim-leetcode.config")
 
--- Separator sizing
-local split_ratio = C.description_split or 0.35
+-- ────────────────────────────────────────────────────────────────────────────
+-- Layout & wrapping parameters
+-- ────────────────────────────────────────────────────────────────────────────
+local split_ratio = C.description_split or 0.35 -- for separators
+local wrap_enabled = C.enable_custom_wrap ~= false -- default true
+local wrap_ratio = (C.description_split or 0.35) - (C.custom_wrap_offset or 0.10)
+
+if wrap_ratio < 0.05 then
+	wrap_ratio = 0.05
+end -- sane lower bound
+
 local main_sep_ratio = 0.50
 local example_sep_ratio = 0.25
 
--- HTML entities
+-- ────────────────────────────────────────────────────────────────────────────
+-- HTML entities and sub/superscripts
+-- ────────────────────────────────────────────────────────────────────────────
 local html_entities = {
 	["&nbsp;"] = " ",
 	["&#39;"] = "'",
@@ -33,7 +45,6 @@ local html_entities = {
 	["&ast;"] = "*",
 }
 
--- Subscripts and superscripts
 local subscript_map = {
 	["0"] = "₀",
 	["1"] = "₁",
@@ -61,6 +72,7 @@ local subscript_map = {
 	["t"] = "ₜ",
 	["x"] = "ₓ",
 }
+
 local superscript_map = {
 	["0"] = "⁰",
 	["1"] = "¹",
@@ -74,7 +86,9 @@ local superscript_map = {
 	["9"] = "⁹",
 }
 
--- Entities + <sup>
+-- ────────────────────────────────────────────────────────────────────────────
+-- Helper functions
+-- ────────────────────────────────────────────────────────────────────────────
 local function process_entities(text)
 	for pat, rep in pairs(html_entities) do
 		text = text:gsub(pat, rep)
@@ -86,38 +100,26 @@ local function process_entities(text)
 	end)
 end
 
--- Protect inline <code>…</code>
 local function process_code_blocks(text)
 	local blocks, id = {}, 0
 	local out = text:gsub("<code>(.-)</code>", function(c)
 		id = id + 1
 		local ph = ("___CODE_PLACEHOLDER_%d___"):format(id)
-		blocks[ph] = c -- raw code, no backticks
+		blocks[ph] = c
 		return ph
 	end)
-
 	return out, blocks
 end
-
-local function restore_code_blocks(text, blocks)
+local function restore_code_blocks(t, blocks)
 	for ph, code in pairs(blocks) do
-		text = text:gsub(ph, code)
+		t = t:gsub(ph, code)
 	end
-	return text
+	return t
 end
 
--- Strip HTML + multi-digit <sup> + <sub> and completely remove image tags
 local function process_html_tags(text)
 	local t, blocks = process_code_blocks(text)
 
-	-- multi-digit sup
-	t = t:gsub("<sup>(%d+)</sup>", function(ds)
-		return ds:gsub(".", function(d)
-			return superscript_map[d] or "^" .. d
-		end)
-	end)
-
-	-- Process basic HTML tags
 	t = t:gsub("<br%s*/?>", "\n")
 		:gsub("<[bB]>(.-)</[bB]>", "%1")
 		:gsub("<strong>(.-)</strong>", "%1")
@@ -128,27 +130,20 @@ local function process_html_tags(text)
 			return c:gsub("<li>(.-)</li>", "\n• %1\n")
 		end)
 		:gsub("<ol>(.-)</ol>", function(c)
-			local o, i = "\n", 1
+			local out, n = "\n", 1
 			for it in c:gmatch("<li>(.-)</li>") do
-				o = o .. i .. ". " .. it .. "\n"
-				i = i + 1
+				out = out .. n .. ". " .. it .. "\n"
+				n = n + 1
 			end
-			return o
+			return out
 		end)
 		:gsub("<h%d>(.-)</h%d>", "\n%1\n")
 		:gsub("<p>(.-)</p>", "%1\n\n")
 		:gsub("<code>(.-)</code>", "%1")
 
-	-- Remove all image tags completely (no placeholders)
-	t = t:gsub("<img[^>]-/>", "")
-
-	-- Remove any remaining HTML tags
-	t = t:gsub("<[^>]+>", "")
-
-	-- Restore protected blocks
+	t = t:gsub("<img[^>]-/>", ""):gsub("<[^>]+>", "") -- drop images & any tag
 	t = restore_code_blocks(t, blocks)
 
-	-- Process subscripts
 	return t:gsub("<sub>(.-)</sub>", function(c)
 		return c:gsub(".", function(ch)
 			return subscript_map[ch:lower()] or ch
@@ -156,15 +151,12 @@ local function process_html_tags(text)
 	end)
 end
 
--- LeetCode patterns + separators
 local function process_leetcode_patterns(text)
 	local t = text:gsub("\n\n\n+", "\n\n")
 	local cols = vim.o.columns or 80
 	local w = math.floor(cols * split_ratio)
-	local main_w = math.floor(w * main_sep_ratio)
-	local ex_w = math.floor(w * example_sep_ratio)
-	local main_s = string.rep("-", main_w)
-	local ex_s = string.rep("-", ex_w)
+	local main_w, ex_w = math.floor(w * main_sep_ratio), math.floor(w * example_sep_ratio)
+	local main_s, ex_s = string.rep("-", main_w), string.rep("-", ex_w)
 
 	local out = "Description\n" .. main_s .. "\n\n"
 	local title = t:match("^%s*(.-)%s*\n")
@@ -177,40 +169,85 @@ local function process_leetcode_patterns(text)
 	out = out:gsub("Example (%d+):", function(n)
 		return "\nExample " .. n .. ":\n" .. ex_s
 	end)
-	out = out:gsub("Input:", "Input:  "):gsub("Output:", "Output: "):gsub("Explanation:", "Explanation: ")
-	out = out:gsub("Constraints:", "\nConstraints:\n" .. main_s)
-	out = out:gsub("(• Only one valid answer exists%.\n\n)Follow%-up:", "%1" .. main_s .. "\n\nFollow-up:")
-	out = out:gsub("\n%s*%*%s+", "\n• ")
+		:gsub("Input:", "Input:  ")
+		:gsub("Output:", "Output: ")
+		:gsub("Explanation:", "Explanation: ")
+		:gsub("Constraints:", "\nConstraints:\n" .. main_s)
+		:gsub("(• Only one valid answer exists%.\n\n)Follow%-up:", "%1" .. main_s .. "\n\nFollow-up:")
+		:gsub("\n%s*%*%s+", "\n• ")
 		:gsub("\n\n%s*•", "\n• ")
 		:gsub("•%s*(%-?%d+)%s*<=%s*nums%.length%s*<=%s*(%-?%d+)", "• %1 <= nums.length <= %2")
 		:gsub("•%s*(%-?%d+)%s*<=%s*nums%[i%]%s*<=%s*(%-?%d+)", "• %1 <= nums[i] <= %2")
-	out = out:gsub("O%(n<sup>(%d+)</sup>%)", function(ds)
-		return "O(n" .. ds:gsub(".", function(d)
-			return superscript_map[d] or "^" .. d
-		end) .. ")"
-	end)
-	out = out:gsub("\nFollow%-up:%s*\n%-+", "\nFollow-up:"):gsub("\n\n\n+", "\n\n")
-
-	-- Ensure there are no placeholder markers
-	out = out:gsub("___IMAGE_PLACEHOLDER_%d+___", "")
-	out = out:gsub("\n\n\n+", "\n\n") -- Clean up any excess newlines
-
+		:gsub("O%(n<sup>(%d+)</sup>%)", function(ds)
+			return "O(n" .. ds:gsub(".", function(d)
+				return superscript_map[d] or "^" .. d
+			end) .. ")"
+		end)
+		:gsub("\nFollow%-up:%s*\n%-+", "\nFollow-up:")
+		:gsub("\n\n\n+", "\n\n")
 	return out
 end
 
+-- ────────────────────────────────────────────────────────────────────────────
+-- Custom hard‑wrap helpers
+-- ────────────────────────────────────────────────────────────────────────────
+local function should_wrap(line)
+	return not (
+		line:match("^%s*•")
+		or line:match("^%s*%d+%.")
+		or line:match("^%s*Example %d+:")
+		or line:match("^%s*Input:")
+		or line:match("^%s*Output:")
+		or line:match("^%s*Explanation:")
+		or line:match("^%s*Constraints:")
+		or line:match("^%-+$")
+		or line:match("^%s*$")
+	)
+end
+
+local function wrap_paragraph(line, width)
+	local out, remain = {}, line
+	while #remain > width do
+		local cut = remain:sub(1, width):match(".*()%s+") -- last space ≤ width
+		if not cut or cut < width * 0.3 then
+			cut = width
+		end
+		local segment = remain:sub(1, cut):gsub("%s+$", "")
+		table.insert(out, segment)
+		remain = remain:sub(cut + 1):gsub("^%s+", "")
+	end
+	table.insert(out, remain)
+	return table.concat(out, "\n")
+end
+
+local function apply_custom_wrap(text)
+	local cols = vim.o.columns or 80
+	local width = math.max(20, math.floor(cols * wrap_ratio) - 2)
+
+	local wrapped = {}
+	for line in text:gmatch("([^\n]*)\n?") do
+		if should_wrap(line) and #line > width then
+			line = wrap_paragraph(line, width)
+		end
+		table.insert(wrapped, line)
+	end
+	return table.concat(wrapped, "\n")
+end
+
+-- ────────────────────────────────────────────────────────────────────────────
+-- Public API
+-- ────────────────────────────────────────────────────────────────────────────
 function M.format_problem_text(html)
 	if type(html) ~= "string" or html == "" then
 		return ""
 	end
-
-	-- Process HTML entities first
 	local t = process_entities(html)
-
-	-- Process HTML tags, completely removing image tags
 	t = process_html_tags(t)
-
-	-- Format LeetCode patterns
-	return process_leetcode_patterns(t)
+	t = process_leetcode_patterns(t)
+	if wrap_enabled then
+		t = apply_custom_wrap(t)
+	end
+	return t
 end
 
 function M.setup_highlighting()

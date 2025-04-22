@@ -1,8 +1,11 @@
--- Configuration for nvim-leetcode
+-- Configuration for nvim‑leetcode
 local M = {
+	---------------------------------------------------------------------------
+	-- Core settings
+	---------------------------------------------------------------------------
 	default_language = "cpp",
 
-	-- XDG-compliant paths
+	-- XDG‑compliant paths -----------------------------------------------------
 	cache_dir = vim.fn.expand("~/.cache/nvim-leetcode"),
 	cache_subdir = "meta",
 	cache_file = "leetcode_cache.json",
@@ -12,60 +15,70 @@ local M = {
 
 	API_URL = "https://leetcode.com/api/problems/all/",
 
-	-- How long (in ms) to wait after redraw for notifications to appear
-	notify_wait_timeout = 50,
+	-- Notification timing -----------------------------------------------------
+	notify_wait_timeout = 50, -- ms to keep floating notifier visible
+	notify_wait_interval = 10, -- ms polling interval inside vim.wait
 
-	-- How often (in ms) vim.wait should poll before giving up
-	notify_wait_interval = 10,
+	-- Window layout -----------------------------------------------------------
+	description_split = 0.35, -- fraction of tab width for description
 
-	description_split = 0.35,
+	---------------------------------------------------------------------------
+	-- ❶  Custom hard‑wrap options
+	---------------------------------------------------------------------------
+	enable_custom_wrap = true, -- set false ⇒ no hard wrapping at all
+	custom_wrap_offset = 0.02, -- wrap width uses (description_split – offset)
+	-- e.g. 0.35 – 0.10  = 0.25
 
-	-- Features configuration
+	---------------------------------------------------------------------------
+	-- Feature toggles
+	---------------------------------------------------------------------------
 	include_problem_metadata = true, -- Include problem metadata
-	include_leetcode_tags = true, -- Include LeetCode tags
-	include_user_tags = true, -- Include user tags section
-	metadata_at_bottom = true, -- Put metadata at the bottom of the file
-	metadata_comment_style = "multi", -- Use multiline comment style
+	include_leetcode_tags = true, -- Include LC tags
+	include_user_tags = true, -- “User Tags:” stub
+	metadata_at_bottom = true, -- Put metadata at file end
+	metadata_comment_style = "multi", -- multiline /*…*/
 
-	-- Image configuration
-	enable_images = true, -- Enable image display in problems
-	use_direct_urls = true, -- Use direct URLs instead of downloading images
-	image_render_delay = 100, -- Delay in ms before rendering images (helps with layout)
-	image_max_width = nil, -- Maximum width for images (nil = auto-calculate based on split)
-	image_max_height = 20, -- Maximum height for images
-	image_right_after_separator = true, -- Place images right after example separators
-	image_preserve_aspect_ratio = true, -- Preserve aspect ratio when resizing images
-	image_auto_render_on_win_focus = true, -- Re-render images when window gets focus
+	---------------------------------------------------------------------------
+	-- Image handling
+	---------------------------------------------------------------------------
+	enable_images = true,
+	use_direct_urls = true,
+	image_render_delay = 100, -- ms
+	image_max_width = nil, -- nil → auto
+	image_max_height = 20,
+	image_right_after_separator = true,
+	image_preserve_aspect_ratio = true,
+	image_auto_render_on_win_focus = true,
 }
 
--- Find path to the dependencies directory
+-- ---------------------------------------------------------------------------
+-- Helper: find dependencies directory
+-- ---------------------------------------------------------------------------
 function M.get_dependencies_dir()
-	-- Get the directory where this plugin's lua files are installed
 	local source_path = debug.getinfo(1, "S").source:sub(2)
 	local plugin_dir = vim.fn.fnamemodify(source_path, ":h")
 	return plugin_dir .. "/dependencies"
 end
 
+-- ---------------------------------------------------------------------------
 -- Ensure cache directories exist
+-- ---------------------------------------------------------------------------
 function M.ensure_cache_dirs()
-	-- Create main cache directory
+	-- main dir
 	if vim.fn.isdirectory(M.cache_dir) == 0 then
 		vim.fn.mkdir(M.cache_dir, "p")
 	end
-
-	-- Create metadata cache subdir
+	-- metadata
 	local meta_dir = M.cache_dir .. "/" .. M.cache_subdir
 	if vim.fn.isdirectory(meta_dir) == 0 then
 		vim.fn.mkdir(meta_dir, "p")
 	end
-
-	-- Create solutions subdir
+	-- solutions
 	local sol_dir = M.cache_dir .. "/" .. M.solutions_subdir
 	if vim.fn.isdirectory(sol_dir) == 0 then
 		vim.fn.mkdir(sol_dir, "p")
 	end
-
-	-- Create images subdir if needed (only when not using direct URLs)
+	-- images (only if we cache locally)
 	if not M.use_direct_urls then
 		local img_dir = M.cache_dir .. "/" .. M.images_subdir
 		if vim.fn.isdirectory(img_dir) == 0 then
