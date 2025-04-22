@@ -1,13 +1,15 @@
 -- lua/nvim‑leetcode/format/html.lua
--- Problem text formatter module
+-- ===========================================================================
+--  Problem description formatter for nvim‑leetcode
+-- ===========================================================================
+
 local M = {}
 
--- Load shared configuration
+-------------------------------------------------------------------------------
+-- Configuration --------------------------------------------------------------
+-------------------------------------------------------------------------------
 local C = require("nvim-leetcode.config")
 
--- ────────────────────────────────────────────────────────────────────────────
--- Layout & wrapping parameters
--- ────────────────────────────────────────────────────────────────────────────
 local split_ratio = C.description_split or 0.35
 local wrap_enabled = C.enable_custom_wrap ~= false
 local wrap_ratio = (C.description_split or 0.35) - (C.custom_wrap_offset or 0.10)
@@ -17,9 +19,9 @@ end
 
 local main_sep_ratio, example_sep_ratio = 0.50, 0.25
 
--- ────────────────────────────────────────────────────────────────────────────
--- HTML entities and sub/superscripts
--- ────────────────────────────────────────────────────────────────────────────
+-------------------------------------------------------------------------------
+-- HTML entities --------------------------------------------------------------
+-------------------------------------------------------------------------------
 local html_entities = {
 	["&nbsp;"] = " ",
 	["&#39;"] = "'",
@@ -43,6 +45,50 @@ local html_entities = {
 	["&ast;"] = "*",
 }
 
+-------------------------------------------------------------------------------
+-- Superscript / subscript glyph maps -----------------------------------------
+-------------------------------------------------------------------------------
+local superscript_map = {
+	["0"] = "⁰",
+	["1"] = "¹",
+	["2"] = "²",
+	["3"] = "³",
+	["4"] = "⁴",
+	["5"] = "⁵",
+	["6"] = "⁶",
+	["7"] = "⁷",
+	["8"] = "⁸",
+	["9"] = "⁹",
+	["-"] = "⁻",
+	["+"] = "⁺",
+	["("] = "⁽",
+	[")"] = "⁾",
+	["a"] = "ᵃ",
+	["b"] = "ᵇ",
+	["c"] = "ᶜ",
+	["d"] = "ᵈ",
+	["e"] = "ᵉ",
+	["f"] = "ᶠ",
+	["g"] = "ᵍ",
+	["h"] = "ʰ",
+	["i"] = "ⁱ",
+	["j"] = "ʲ",
+	["k"] = "ᵏ",
+	["l"] = "ˡ",
+	["m"] = "ᵐ",
+	["n"] = "ⁿ",
+	["o"] = "ᵒ",
+	["p"] = "ᵖ",
+	["r"] = "ʳ",
+	["s"] = "ˢ",
+	["t"] = "ᵗ",
+	["u"] = "ᵘ",
+	["v"] = "ᵛ",
+	["w"] = "ʷ",
+	["x"] = "ˣ",
+	["y"] = "ʸ",
+	["z"] = "ᶻ",
+}
 local subscript_map = {
 	["0"] = "₀",
 	["1"] = "₁",
@@ -54,6 +100,10 @@ local subscript_map = {
 	["7"] = "₇",
 	["8"] = "₈",
 	["9"] = "₉",
+	["-"] = "₋",
+	["+"] = "₊",
+	["("] = "₍",
+	[")"] = "₎",
 	["a"] = "ₐ",
 	["e"] = "ₑ",
 	["h"] = "ₕ",
@@ -68,33 +118,33 @@ local subscript_map = {
 	["r"] = "ᵣ",
 	["s"] = "ₛ",
 	["t"] = "ₜ",
+	["u"] = "ᵤ",
+	["v"] = "ᵥ",
 	["x"] = "ₓ",
 }
 
-local superscript_map = {
-	["0"] = "⁰",
-	["1"] = "¹",
-	["2"] = "²",
-	["3"] = "³",
-	["4"] = "⁴",
-	["5"] = "⁵",
-	["6"] = "⁶",
-	["7"] = "⁷",
-	["8"] = "⁸",
-	["9"] = "⁹",
-}
+local function to_super(txt)
+	return txt:gsub(".", function(c)
+		return superscript_map[c] or "^" .. c
+	end)
+end
+local function to_sub(txt)
+	return txt:gsub(".", function(c)
+		return subscript_map[c] or "_" .. c
+	end)
+end
 
--- ────────────────────────────────────────────────────────────────────────────
--- Helper functions
--- ────────────────────────────────────────────────────────────────────────────
+-------------------------------------------------------------------------------
+-- Helpers --------------------------------------------------------------------
+-------------------------------------------------------------------------------
 local function process_entities(text)
 	for pat, rep in pairs(html_entities) do
 		text = text:gsub(pat, rep)
 	end
-	return text:gsub("<sup>(%d+)</sup>", function(ds)
-		return ds:gsub(".", function(d)
-			return superscript_map[d] or "^" .. d
-		end)
+	return text:gsub("<sup>(.-)</sup>", function(s)
+		return to_super(s)
+	end):gsub("<sub>(.-)</sub>", function(s)
+		return to_sub(s)
 	end)
 end
 
@@ -118,7 +168,8 @@ end
 local function process_html_tags(text)
 	local t, blocks = process_code_blocks(text)
 
-	t = t:gsub("<br%s*/?>", "\n")
+	t = t
+		:gsub("<br%s*/?>", "\n")
 		:gsub("<[bB]>(.-)</[bB]>", "%1")
 		:gsub("<strong>(.-)</strong>", "%1")
 		:gsub("<[iI]>(.-)</[iI]>", "%1")
@@ -138,22 +189,18 @@ local function process_html_tags(text)
 		:gsub("<h%d>(.-)</h%d>", "\n%1\n")
 		:gsub("<p>(.-)</p>", "%1\n\n")
 		:gsub("<code>(.-)</code>", "%1")
+		:gsub("<img[^>]-/>", "") -- drop images
+		:gsub("<[^>]+>", "") -- any remaining tag
 
-	t = t:gsub("<img[^>]-/>", ""):gsub("<[^>]+>", "")
-	t = restore_code_blocks(t, blocks)
-
-	return t:gsub("<sub>(.-)</sub>", function(c)
-		return c:gsub(".", function(ch)
-			return subscript_map[ch:lower()] or ch
-		end)
-	end)
+	return restore_code_blocks(t, blocks)
 end
 
 local function process_leetcode_patterns(text)
 	local t = text:gsub("\n\n\n+", "\n\n")
-	local cols, w = vim.o.columns or 80, math.floor((vim.o.columns or 80) * split_ratio)
-	local main_w, ex_w = math.floor(w * main_sep_ratio), math.floor(w * example_sep_ratio)
-	local main_s, ex_s = string.rep("-", main_w), string.rep("-", ex_w)
+	local cols = vim.o.columns or 80
+	local w = math.floor(cols * split_ratio)
+	local main_s = string.rep("-", math.floor(w * main_sep_ratio))
+	local ex_s = string.rep("-", math.floor(w * example_sep_ratio))
 
 	local out = "Description\n" .. main_s .. "\n\n"
 	local title = t:match("^%s*(.-)%s*\n")
@@ -173,21 +220,15 @@ local function process_leetcode_patterns(text)
 		:gsub("(• Only one valid answer exists%.\n\n)Follow%-up:", "%1" .. main_s .. "\n\nFollow-up:")
 		:gsub("\n%s*%*%s+", "\n• ")
 		:gsub("\n\n%s*•", "\n• ")
-		:gsub("•%s*(%-?%d+)%s*<=%s*nums%.length%s*<=%s*(%-?%d+)", "• %1 <= nums.length <= %2")
-		:gsub("•%s*(%-?%d+)%s*<=%s*nums%[i%]%s*<=%s*(%-?%d+)", "• %1 <= nums[i] <= %2")
-		:gsub("O%(n<sup>(%d+)</sup>%)", function(ds)
-			return "O(n" .. ds:gsub(".", function(d)
-				return superscript_map[d] or "^" .. d
-			end) .. ")"
-		end)
 		:gsub("\nFollow%-up:%s*\n%-+", "\nFollow-up:")
 		:gsub("\n\n\n+", "\n\n")
+
 	return out
 end
 
--- ────────────────────────────────────────────────────────────────────────────
--- Custom hard‑wrap helpers
--- ────────────────────────────────────────────────────────────────────────────
+-------------------------------------------------------------------------------
+-- Hard‑wrap helpers ----------------------------------------------------------
+-------------------------------------------------------------------------------
 local function should_wrap(line)
 	return not (
 		line:match("^%s*•")
@@ -209,7 +250,7 @@ local function wrap_paragraph(line, width)
 		if cut < width * 0.3 then
 			cut = width
 		end
-		local segment = remain:sub(1, cut):gsub("%s+$", "")
+		local segment = remain:sub(1, cut):gsub("%s+$", "") -- FIX: capture result
 		table.insert(out, segment)
 		remain = remain:sub(cut + 1):gsub("^%s+", "")
 	end
@@ -220,7 +261,6 @@ end
 local function apply_custom_wrap(text)
 	local cols = vim.o.columns or 80
 	local width = math.max(20, math.floor(cols * wrap_ratio) - 2)
-
 	local wrapped = {}
 	for line in text:gmatch("([^\n]*)\n?") do
 		if should_wrap(line) and #line > width then
@@ -231,24 +271,20 @@ local function apply_custom_wrap(text)
 	return table.concat(wrapped, "\n")
 end
 
--- ────────────────────────────────────────────────────────────────────────────
--- Public API
--- ────────────────────────────────────────────────────────────────────────────
+-------------------------------------------------------------------------------
+-- Public API -----------------------------------------------------------------
+-------------------------------------------------------------------------------
 function M.format_problem_text(html)
 	if type(html) ~= "string" or html == "" then
 		return ""
 	end
-
 	local t = process_entities(html)
 	t = process_html_tags(t)
 	t = process_leetcode_patterns(t)
 	if wrap_enabled then
 		t = apply_custom_wrap(t)
 	end
-
-	-- ▸ Ensure **exactly one** trailing newline
-	t = t:gsub("\n+$", "\n")
-
+	t = t:gsub("\n+$", "\n") -- exactly one trailing newline
 	return t
 end
 
@@ -266,7 +302,7 @@ function M.setup_highlighting()
     syntax region ProblemExplanation start=/^Explanation:/ end=/^\s*$/ keepend
     syntax match ProblemMath        /[<>=]=\|[<>=]\|O(n[²³⁴⁵⁶⁷⁸⁹])/
     syntax match ProblemNumber      /\<\d\+\>/
-    syntax match ProblemSuperscript /[⁰¹²³⁴⁵⁶⁷⁸⁹]/
+    syntax match ProblemSuperscript /[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺⁽⁾ⁿˣʸ]/
     syntax match ProblemVariable    /nums\|\<n\>\|target\|Node\.val/
 
     setlocal conceallevel=2 concealcursor=nc
