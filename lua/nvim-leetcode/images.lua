@@ -77,27 +77,20 @@ function M.download_all_images(html_content, cache_dir)
 	return filepaths
 end
 
--- Replace <img> tags with placeholders, ensuring each image tag is uniquely identified
-function M.prepare_content_with_image_placeholders(html_content)
-	if not html_content or html_content == "" then
-		return html_content, {}
-	end
-	local placeholders = {}
-	local count = 0
-
-	-- Improved regex to better match complete img tags
-	local content = html_content:gsub("<img[^>]-/?>", function(img_tag)
-		count = count + 1
-		local ph = "___IMAGE_PLACEHOLDER_" .. count .. "___"
-		table.insert(placeholders, { placeholder = ph, tag = img_tag })
-		return ph
-	end)
-
-	return content, placeholders
-end
-
--- Render an image in the buffer
+-- Render an image in the buffer with improved placement consistency
 function M.render_image(buf, win, filepath, line_num)
+	-- Cache to track image renders to prevent duplicates
+	_G.leetcode_image_cache = _G.leetcode_image_cache or {}
+	local cache_key = buf .. "-" .. line_num
+
+	-- Check if we already rendered this image
+	if _G.leetcode_image_cache[cache_key] then
+		return
+	end
+
+	-- Mark as rendered to prevent duplicates
+	_G.leetcode_image_cache[cache_key] = true
+
 	if not M.can_display_images() then
 		vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
 			"[Image: Unable to display - image.nvim not available]",
@@ -119,11 +112,22 @@ function M.render_image(buf, win, filepath, line_num)
 		return
 	end
 
-	-- reserve exactly one blank line at `line_num`
+	-- Ensure the target line is empty before rendering
 	vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, { "" })
 
-	-- now hand off to image.nvim with an explicit x/y geometry
-	local img = require("image").from_file(filepath, {
+	-- Calculate image dimensions based on window size
+	local default_max_width = math.floor(vim.o.columns * 0.35) -- match your split ratio
+	local max_width = C.image_max_width or default_max_width
+	local max_height = C.image_max_height or 20
+
+	-- Now use image.nvim to render at the exact position
+	local img_lib = require("image")
+
+	-- First, clear any existing images at this position
+	img_lib.clear({ buffer = buf, window = win })
+
+	-- Create a new image
+	local img = img_lib.from_file(filepath, {
 		window = win,
 		buffer = buf,
 		with_virtual_padding = true,
@@ -132,7 +136,12 @@ function M.render_image(buf, win, filepath, line_num)
 		y = line_num,
 	})
 
-	img:render()
+	-- Render with proper sizing
+	img:render({
+		max_width = max_width,
+		max_height = max_height,
+		preserve_aspect_ratio = C.image_preserve_aspect_ratio or true,
+	})
 end
 
 return M

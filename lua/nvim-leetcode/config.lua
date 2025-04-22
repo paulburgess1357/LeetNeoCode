@@ -30,6 +30,11 @@ local M = {
 	-- Image configuration
 	enable_images = true, -- Enable image display in problems
 	image_render_delay = 100, -- Delay in ms before rendering images (helps with layout)
+	image_max_width = nil, -- Maximum width for images (nil = auto-calculate based on split)
+	image_max_height = 20, -- Maximum height for images
+	image_right_after_separator = true, -- Place images right after example separators
+	image_preserve_aspect_ratio = true, -- Preserve aspect ratio when resizing images
+	image_auto_render_on_win_focus = true, -- Re-render images when window gets focus
 }
 
 -- Find path to the dependencies directory

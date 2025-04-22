@@ -7,6 +7,20 @@ local images = require("nvim-leetcode.images")
 
 local M = {}
 
+-- Helper function to find lines with example headers and separators
+local function find_example_sections(lines)
+	local sections = {}
+	for i, line in ipairs(lines) do
+		if line:match("^Example %d+:$") and i < #lines and lines[i + 1]:match("^%-+$") then
+			table.insert(sections, { header_line = i, separator_line = i + 1 })
+		end
+	end
+	return sections
+end
+
+-- Store rendered image info in a global table to avoid duplicates
+_G.leetcode_rendered_images = _G.leetcode_rendered_images or {}
+
 -- Open problem description buffer
 function M.open_description_buffer(problem_data, num, title, slug)
 	vim.cmd("enew")
@@ -14,15 +28,19 @@ function M.open_description_buffer(problem_data, num, title, slug)
 	vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
 	vim.api.nvim_buf_set_option(buf, "bufhidden", "hide")
 
-	-- 1) Download & placeholderize
+	-- 1) Download images but don't placeholderize the content
 	local img_cache_dir = images.get_image_cache_dir(num, title, slug)
 	local image_files = images.download_all_images(problem_data.content, img_cache_dir)
-	local content_ph, placeholders = images.prepare_content_with_image_placeholders(problem_data.content)
 
-	-- 2) Format & populate buffer
-	local formatted = format.format_problem_text(content_ph)
-	vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(formatted, "\n", { plain = true }))
+	-- 2) Format text only (no placeholders)
+	local formatted = format.format_problem_text(problem_data.content)
+	local lines = vim.split(formatted, "\n", { plain = true })
 
+	-- 3) Find example sections
+	local example_sections = find_example_sections(lines)
+
+	-- 4) Set up the buffer
+	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 	vim.api.nvim_buf_set_option(buf, "filetype", "text")
 	vim.api.nvim_buf_set_option(buf, "spell", false)
 	format.setup_highlighting()
@@ -34,88 +52,68 @@ function M.open_description_buffer(problem_data, num, title, slug)
 		vim.api.nvim_buf_set_name(buf, buf_name)
 	end
 
-	-- 3) Find each placeholder, replace it with image or message
+	-- 5) Insert images after example separators
 	local rendered = {}
 	local win = vim.api.nvim_get_current_win()
+	local line_adjustments = 0
 
-	-- Create a mapping of placeholder text to its index in image_files
-	local placeholder_to_index = {}
-	for i, ph_data in ipairs(placeholders) do
-		placeholder_to_index[ph_data.placeholder] = i
-	end
+	-- Create a unique key for this buffer
+	local buffer_key = buf_name
 
-	-- Process all lines in the buffer for placeholders
-	local all_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-	local line_adjustments = 0 -- Track line number adjustments
+	-- Initialize the rendered images record for this buffer
+	_G.leetcode_rendered_images[buffer_key] = {}
 
-	for ln = 1, #all_lines do
-		local adjusted_ln = ln + line_adjustments
-		local line = all_lines[ln]
+	-- Calculate how many images we need to place
+	local images_per_example = math.min(#image_files, #example_sections)
 
-		-- Find placeholder in this line
-		for placeholder, idx in pairs(placeholder_to_index) do
-			local s, e = line:find(placeholder, 1, true)
-			if s then
-				-- Get the image file for this placeholder if it exists
-				local img = image_files[idx]
+	for i = 1, images_per_example do
+		local img = image_files[i]
+		local section = example_sections[i]
 
-				-- Split line at placeholder
-				local before = line:sub(1, s - 1)
-				local after = line:sub(e + 1)
+		if img and section then
+			-- Calculate the actual line number after previous adjustments
+			local separator_line = section.separator_line + line_adjustments
 
-				-- Create replacement lines
-				local new_lines = {}
-				if before ~= "" then
-					table.insert(new_lines, before)
-				end
+			-- Insert a blank line right after the separator for the image
+			vim.api.nvim_buf_set_lines(buf, separator_line, separator_line, false, { "" })
+			line_adjustments = line_adjustments + 1
 
-				-- Add a blank line for the image
-				local img_line_idx = #new_lines + 1
-				table.insert(new_lines, "")
+			-- Remember this position for rendering
+			table.insert(rendered, {
+				row = separator_line,
+				path = img.path,
+			})
 
-				if after ~= "" then
-					table.insert(new_lines, after)
-				end
+			-- Keep track that we've rendered this image
+			_G.leetcode_rendered_images[buffer_key][separator_line] = true
 
-				-- Only one placeholder per line, so we can replace and move on
-				if #new_lines > 0 then
-					-- Replace the current line with our new lines
-					vim.api.nvim_buf_set_lines(buf, adjusted_ln - 1, adjusted_ln, false, new_lines)
-
-					-- Update line adjustments for any subsequent placeholders
-					line_adjustments = line_adjustments + (#new_lines - 1)
-
-					-- Calculate the exact row for rendering the image
-					local render_row = (adjusted_ln - 1) + (img_line_idx - 1)
-
-					-- Store rendering info and render the image immediately
-					if img and img.path then
-						table.insert(rendered, { row = render_row, path = img.path })
-						images.render_image(buf, win, img.path, render_row)
-					else
-						-- No image file available, just show placeholder text
-						local message = "[Image: Unable to display - terminal doesn't support images]"
-						vim.api.nvim_buf_set_lines(buf, render_row, render_row + 1, false, { message })
-					end
-
-					break -- Done with this line
-				end
-			end
+			-- Render the image or placeholder immediately
+			images.render_image(buf, win, img.path, separator_line)
 		end
 	end
 
-	-- 4) Autocmd group to re‑draw images on scroll/enter/resize
+	-- 6) Set up autocommand for window focus
 	local group = "LeetCodeImages_" .. buf
 	vim.api.nvim_create_augroup(group, { clear = true })
-	vim.api.nvim_create_autocmd({ "BufWinEnter", "WinScrolled", "VimResized" }, {
+
+	vim.api.nvim_create_autocmd({ "WinEnter" }, {
 		group = group,
 		buffer = buf,
 		callback = function()
 			local w = vim.api.nvim_get_current_win()
-			for _, entry in ipairs(rendered) do
-				if entry.path then
-					images.render_image(buf, w, entry.path, entry.row)
-				end
+			-- Only re-render if not already rendered in this session
+			if #rendered > 0 then
+				vim.defer_fn(function()
+					for _, entry in ipairs(rendered) do
+						if entry.path and _G.leetcode_rendered_images[buffer_key] then
+							-- Check if we need to re-render
+							local line_content = vim.api.nvim_buf_get_lines(buf, entry.row, entry.row + 1, false)[1]
+							if line_content == "" then -- Only render into empty lines
+								images.render_image(buf, w, entry.path, entry.row)
+							end
+						end
+					end
+				end, C.image_render_delay or 100)
 			end
 		end,
 	})

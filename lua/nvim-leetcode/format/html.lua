@@ -86,7 +86,7 @@ local function process_entities(text)
 	end)
 end
 
--- Protect inline <code>…</code> and image placeholders
+-- Protect inline <code>…</code>
 local function process_code_blocks(text)
 	local blocks, id = {}, 0
 	local out = text:gsub("<code>(.-)</code>", function(c)
@@ -95,11 +95,6 @@ local function process_code_blocks(text)
 		blocks[ph] = c -- raw code, no backticks
 		return ph
 	end)
-
-	-- Also protect any image placeholders
-	for placeholder in out:gmatch("___IMAGE_PLACEHOLDER_%d+___") do
-		blocks[placeholder] = placeholder
-	end
 
 	return out, blocks
 end
@@ -111,16 +106,18 @@ local function restore_code_blocks(text, blocks)
 	return text
 end
 
--- Strip HTML + multi-digit <sup> + <sub> while preserving image placeholders
+-- Strip HTML + multi-digit <sup> + <sub> and completely remove image tags
 local function process_html_tags(text)
 	local t, blocks = process_code_blocks(text)
+
 	-- multi-digit sup
 	t = t:gsub("<sup>(%d+)</sup>", function(ds)
 		return ds:gsub(".", function(d)
 			return superscript_map[d] or "^" .. d
 		end)
 	end)
-	-- tags
+
+	-- Process basic HTML tags
 	t = t:gsub("<br%s*/?>", "\n")
 		:gsub("<[bB]>(.-)</[bB]>", "%1")
 		:gsub("<strong>(.-)</strong>", "%1")
@@ -142,16 +139,8 @@ local function process_html_tags(text)
 		:gsub("<p>(.-)</p>", "%1\n\n")
 		:gsub("<code>(.-)</code>", "%1")
 
-	-- Improved handling for img tags with placeholders
-	t = t:gsub("<img[^>]-/>", function(match)
-		-- Keep only image placeholders and preserve them exactly
-		local placeholder = match:match("___IMAGE_PLACEHOLDER_%d+___")
-		if placeholder then
-			return placeholder
-		end
-		-- If no placeholder found in this tag, remove it
-		return ""
-	end)
+	-- Remove all image tags completely (no placeholders)
+	t = t:gsub("<img[^>]-/>", "")
 
 	-- Remove any remaining HTML tags
 	t = t:gsub("<[^>]+>", "")
@@ -202,8 +191,8 @@ local function process_leetcode_patterns(text)
 	end)
 	out = out:gsub("\nFollow%-up:%s*\n%-+", "\nFollow-up:"):gsub("\n\n\n+", "\n\n")
 
-	-- Ensure image placeholders remain on their own lines for proper rendering
-	out = out:gsub("(___IMAGE_PLACEHOLDER_%d+___)", "\n%1\n")
+	-- Ensure there are no placeholder markers
+	out = out:gsub("___IMAGE_PLACEHOLDER_%d+___", "")
 	out = out:gsub("\n\n\n+", "\n\n") -- Clean up any excess newlines
 
 	return out
@@ -213,8 +202,14 @@ function M.format_problem_text(html)
 	if type(html) ~= "string" or html == "" then
 		return ""
 	end
+
+	-- Process HTML entities first
 	local t = process_entities(html)
+
+	-- Process HTML tags, completely removing image tags
 	t = process_html_tags(t)
+
+	-- Format LeetCode patterns
 	return process_leetcode_patterns(t)
 end
 
@@ -234,7 +229,6 @@ function M.setup_highlighting()
     syntax match ProblemNumber      /\<\d\+\>/
     syntax match ProblemSuperscript /[⁰¹²³⁴⁵⁶⁷⁸⁹]/
     syntax match ProblemVariable    /nums\|\<n\>\|target\|Node\.val/
-    syntax match ProblemImagePlaceholder /___IMAGE_PLACEHOLDER_\d\+___/
 
     setlocal conceallevel=2 concealcursor=nc
     setlocal wrap
@@ -253,7 +247,6 @@ function M.setup_highlighting()
     highlight ProblemNumber        guifg=#d8a657 gui=bold
     highlight ProblemSuperscript   guifg=#d8a657
     highlight ProblemVariable      guifg=#7daea3
-    highlight ProblemImagePlaceholder guifg=#504945
   ]])
 end
 
