@@ -231,7 +231,7 @@ function M.setup_highlighting()
     syntax match ProblemVariable    /nums\|\<n\>\|target\|Node\.val/
 
     setlocal conceallevel=2 concealcursor=nc
-    setlocal wrap
+    setlocal nowrap
 
     highlight ProblemTitle         guifg=#ff7a6c gui=bold
     highlight ProblemSection       guifg=#d8a657 gui=bold

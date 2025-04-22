@@ -3,7 +3,7 @@ local M = {}
 
 -- Setup highlighting for the problem description
 function M.setup_description_highlighting()
-  vim.cmd([[
+	vim.cmd([[
     syntax match ProblemTitle       /^Description$/
     syntax match ProblemSection     /^Constraints:$/
     syntax region ProblemConstraints start=/^Constraints:$/ end=/^\s*$/ keepend
@@ -20,7 +20,7 @@ function M.setup_description_highlighting()
     syntax match ProblemVariable    /nums\|\<n\>\|target\|Node\.val/
 
     setlocal conceallevel=2 concealcursor=nc
-    setlocal wrap
+    setlocal nowrap
 
     highlight ProblemTitle         guifg=#ff7a6c gui=bold
     highlight ProblemSection       guifg=#d8a657 gui=bold
@@ -41,7 +41,7 @@ end
 
 -- Setup highlighting for solution files
 function M.setup_solution_highlighting()
-  vim.cmd([[
+	vim.cmd([[
     " Highlight groups for problem metadata and comments
     highlight default link LeetCodeMetadata Identifier
     highlight default link LeetCodeTag Keyword
@@ -62,7 +62,7 @@ end
 
 -- Setup fold markers for solution files
 function M.setup_fold_settings()
-  vim.cmd([[
+	vim.cmd([[
     " Autocommands for LeetCode solution files
     augroup LeetCodeSolutions
       autocmd!
