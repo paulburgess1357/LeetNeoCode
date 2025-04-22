@@ -28,9 +28,8 @@ function M.open_description_buffer(problem_data, num, title, slug)
 	vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
 	vim.api.nvim_buf_set_option(buf, "bufhidden", "hide")
 
-	-- 1) Download images but don't placeholderize the content
-	local img_cache_dir = images.get_image_cache_dir(num, title, slug)
-	local image_files = images.download_all_images(problem_data.content, img_cache_dir)
+	-- 1) Extract image URLs from the content
+	local image_data = images.prepare_image_urls(problem_data.content)
 
 	-- 2) Format text only (no placeholders)
 	local formatted = format.format_problem_text(problem_data.content)
@@ -64,10 +63,10 @@ function M.open_description_buffer(problem_data, num, title, slug)
 	_G.leetcode_rendered_images[buffer_key] = {}
 
 	-- Calculate how many images we need to place
-	local images_per_example = math.min(#image_files, #example_sections)
+	local images_per_example = math.min(#image_data, #example_sections)
 
 	for i = 1, images_per_example do
-		local img = image_files[i]
+		local img = image_data[i]
 		local section = example_sections[i]
 
 		if img and section then
@@ -81,14 +80,14 @@ function M.open_description_buffer(problem_data, num, title, slug)
 			-- Remember this position for rendering
 			table.insert(rendered, {
 				row = separator_line,
-				path = img.path,
+				url = img.url,
 			})
 
 			-- Keep track that we've rendered this image
 			_G.leetcode_rendered_images[buffer_key][separator_line] = true
 
-			-- Render the image or placeholder immediately
-			images.render_image(buf, win, img.path, separator_line)
+			-- Render the image directly from URL
+			images.render_image(buf, win, img.url, separator_line)
 		end
 	end
 
@@ -105,11 +104,11 @@ function M.open_description_buffer(problem_data, num, title, slug)
 			if #rendered > 0 then
 				vim.defer_fn(function()
 					for _, entry in ipairs(rendered) do
-						if entry.path and _G.leetcode_rendered_images[buffer_key] then
+						if entry.url and _G.leetcode_rendered_images[buffer_key] then
 							-- Check if we need to re-render
 							local line_content = vim.api.nvim_buf_get_lines(buf, entry.row, entry.row + 1, false)[1]
 							if line_content == "" then -- Only render into empty lines
-								images.render_image(buf, w, entry.path, entry.row)
+								images.render_image(buf, w, entry.url, entry.row)
 							end
 						end
 					end

@@ -29,6 +29,7 @@ local M = {
 
 	-- Image configuration
 	enable_images = true, -- Enable image display in problems
+	use_direct_urls = true, -- Use direct URLs instead of downloading images
 	image_render_delay = 100, -- Delay in ms before rendering images (helps with layout)
 	image_max_width = nil, -- Maximum width for images (nil = auto-calculate based on split)
 	image_max_height = 20, -- Maximum height for images
@@ -64,10 +65,12 @@ function M.ensure_cache_dirs()
 		vim.fn.mkdir(sol_dir, "p")
 	end
 
-	-- Create images subdir
-	local img_dir = M.cache_dir .. "/" .. M.images_subdir
-	if vim.fn.isdirectory(img_dir) == 0 then
-		vim.fn.mkdir(img_dir, "p")
+	-- Create images subdir if needed (only when not using direct URLs)
+	if not M.use_direct_urls then
+		local img_dir = M.cache_dir .. "/" .. M.images_subdir
+		if vim.fn.isdirectory(img_dir) == 0 then
+			vim.fn.mkdir(img_dir, "p")
+		end
 	end
 end
 

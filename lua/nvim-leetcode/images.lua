@@ -47,38 +47,20 @@ function M.extract_image_urls(html_content)
 	return urls
 end
 
--- Download an image from URL to the cache directory
-function M.download_image(url, cache_dir, index)
-	local filename = "image_" .. index .. ".png"
-	local filepath = cache_dir .. "/" .. filename
-	if vim.fn.filereadable(filepath) == 1 then
-		return filepath
-	end
-
-	local cmd = { "curl", "-s", "-o", filepath, url }
-	vim.fn.system(cmd)
-	if vim.v.shell_error ~= 0 or vim.fn.filereadable(filepath) ~= 1 then
-		vim.notify("Failed to download image: " .. url, vim.log.levels.WARN)
-		return nil
-	end
-	return filepath
-end
-
--- Download all images from a problem description
-function M.download_all_images(html_content, cache_dir)
+-- Store URLs in memory instead of downloading to files
+function M.prepare_image_urls(html_content)
 	local urls = M.extract_image_urls(html_content)
-	local filepaths = {}
+	local image_data = {}
+
 	for i, url in ipairs(urls) do
-		local path = M.download_image(url, cache_dir, i)
-		if path then
-			table.insert(filepaths, { index = i, path = path })
-		end
+		table.insert(image_data, { index = i, url = url })
 	end
-	return filepaths
+
+	return image_data
 end
 
--- Render an image in the buffer with improved placement consistency
-function M.render_image(buf, win, filepath, line_num)
+-- Render an image in the buffer directly from URL without saving to disk
+function M.render_image(buf, win, image_url, line_num)
 	-- Cache to track image renders to prevent duplicates
 	_G.leetcode_image_cache = _G.leetcode_image_cache or {}
 	local cache_key = buf .. "-" .. line_num
@@ -105,13 +87,6 @@ function M.render_image(buf, win, filepath, line_num)
 		return
 	end
 
-	if vim.fn.filereadable(filepath) ~= 1 then
-		vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
-			"[Image: Unable to load from " .. filepath .. "]",
-		})
-		return
-	end
-
 	-- Ensure the target line is empty before rendering
 	vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, { "" })
 
@@ -120,28 +95,35 @@ function M.render_image(buf, win, filepath, line_num)
 	local max_width = C.image_max_width or default_max_width
 	local max_height = C.image_max_height or 20
 
-	-- Now use image.nvim to render at the exact position
+	-- Use image.nvim to render from URL
 	local img_lib = require("image")
 
 	-- First, clear any existing images at this position
 	img_lib.clear({ buffer = buf, window = win })
 
-	-- Create a new image
-	local img = img_lib.from_file(filepath, {
+	-- Create a new image from URL
+	img_lib.from_url(image_url, {
 		window = win,
 		buffer = buf,
 		with_virtual_padding = true,
 		-- geometry: x = column, y = row (0-based)
 		x = 0,
 		y = line_num,
-	})
-
-	-- Render with proper sizing
-	img:render({
-		max_width = max_width,
-		max_height = max_height,
-		preserve_aspect_ratio = C.image_preserve_aspect_ratio or true,
-	})
+	}, function(img)
+		if img then
+			-- Render with proper sizing
+			img:render({
+				max_width = max_width,
+				max_height = max_height,
+				preserve_aspect_ratio = C.image_preserve_aspect_ratio or true,
+			})
+		else
+			-- Handle loading error
+			vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
+				"[Image: Failed to load from URL]",
+			})
+		end
+	end)
 end
 
 return M
