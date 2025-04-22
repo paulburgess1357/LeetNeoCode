@@ -34,48 +34,72 @@ function M.open_description_buffer(problem_data, num, title, slug)
 		vim.api.nvim_buf_set_name(buf, buf_name)
 	end
 
-	-- 3) Find each placeholder, splice it out & render its image
+	-- 3) Find each placeholder, replace it with image or message
 	local rendered = {}
 	local win = vim.api.nvim_get_current_win()
 
-	-- walk bottom‑up so inserts don’t shift later placeholders
-	for idx = #placeholders, 1, -1 do
-		local ph = placeholders[idx]
-		local img = image_files[idx]
-		if not img then
-			break
-		end
+	-- Create a mapping of placeholder text to its index in image_files
+	local placeholder_to_index = {}
+	for i, ph_data in ipairs(placeholders) do
+		placeholder_to_index[ph_data.placeholder] = i
+	end
 
-		local all = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-		for ln, text in ipairs(all) do
-			local s, e = text:find(ph, 1, true)
+	-- Process all lines in the buffer for placeholders
+	local all_lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+	local line_adjustments = 0 -- Track line number adjustments
+
+	for ln = 1, #all_lines do
+		local adjusted_ln = ln + line_adjustments
+		local line = all_lines[ln]
+
+		-- Find placeholder in this line
+		for placeholder, idx in pairs(placeholder_to_index) do
+			local s, e = line:find(placeholder, 1, true)
 			if s then
-				local before = text:sub(1, s - 1)
-				local after = text:sub(e + 1)
-				local new_lines = {}
+				-- Get the image file for this placeholder if it exists
+				local img = image_files[idx]
 
+				-- Split line at placeholder
+				local before = line:sub(1, s - 1)
+				local after = line:sub(e + 1)
+
+				-- Create replacement lines
+				local new_lines = {}
 				if before ~= "" then
 					table.insert(new_lines, before)
 				end
 
-				-- blank line to host the image
-				local img_offset = #new_lines
+				-- Add a blank line for the image
+				local img_line_idx = #new_lines + 1
 				table.insert(new_lines, "")
 
 				if after ~= "" then
 					table.insert(new_lines, after)
 				end
 
-				-- replace the placeholder with our block
-				vim.api.nvim_buf_set_lines(buf, ln - 1, ln, false, new_lines)
+				-- Only one placeholder per line, so we can replace and move on
+				if #new_lines > 0 then
+					-- Replace the current line with our new lines
+					vim.api.nvim_buf_set_lines(buf, adjusted_ln - 1, adjusted_ln, false, new_lines)
 
-				-- compute the exact row for rendering
-				local render_row = (ln - 1) + img_offset
-				table.insert(rendered, { row = render_row, path = img.path })
+					-- Update line adjustments for any subsequent placeholders
+					line_adjustments = line_adjustments + (#new_lines - 1)
 
-				-- render immediately
-				images.render_image(buf, win, img.path, render_row)
-				break
+					-- Calculate the exact row for rendering the image
+					local render_row = (adjusted_ln - 1) + (img_line_idx - 1)
+
+					-- Store rendering info and render the image immediately
+					if img and img.path then
+						table.insert(rendered, { row = render_row, path = img.path })
+						images.render_image(buf, win, img.path, render_row)
+					else
+						-- No image file available, just show placeholder text
+						local message = "[Image: Unable to display - terminal doesn't support images]"
+						vim.api.nvim_buf_set_lines(buf, render_row, render_row + 1, false, { message })
+					end
+
+					break -- Done with this line
+				end
 			end
 		end
 	end
@@ -89,7 +113,9 @@ function M.open_description_buffer(problem_data, num, title, slug)
 		callback = function()
 			local w = vim.api.nvim_get_current_win()
 			for _, entry in ipairs(rendered) do
-				images.render_image(buf, w, entry.path, entry.row)
+				if entry.path then
+					images.render_image(buf, w, entry.path, entry.row)
+				end
 			end
 		end,
 	})

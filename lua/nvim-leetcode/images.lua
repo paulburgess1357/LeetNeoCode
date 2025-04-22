@@ -37,7 +37,8 @@ function M.extract_image_urls(html_content)
 		return {}
 	end
 	local urls = {}
-	for url in html_content:gmatch('<img.-src="(.-)"') do
+	-- Improved regex to better capture image tags
+	for url in html_content:gmatch('<img[^>]-src="([^"]-)"') do
 		if url:sub(1, 4) ~= "http" then
 			url = "https://leetcode.com" .. url
 		end
@@ -76,47 +77,50 @@ function M.download_all_images(html_content, cache_dir)
 	return filepaths
 end
 
--- Replace <img> tags with placeholders
+-- Replace <img> tags with placeholders, ensuring each image tag is uniquely identified
 function M.prepare_content_with_image_placeholders(html_content)
 	if not html_content or html_content == "" then
 		return html_content, {}
 	end
 	local placeholders = {}
 	local count = 0
-	local content = html_content:gsub('<img.-src=".-".-/>', function()
+
+	-- Improved regex to better match complete img tags
+	local content = html_content:gsub("<img[^>]-/?>", function(img_tag)
 		count = count + 1
 		local ph = "___IMAGE_PLACEHOLDER_" .. count .. "___"
-		table.insert(placeholders, ph)
+		table.insert(placeholders, { placeholder = ph, tag = img_tag })
 		return ph
 	end)
+
 	return content, placeholders
 end
 
 -- Render an image in the buffer
 function M.render_image(buf, win, filepath, line_num)
 	if not M.can_display_images() then
-		vim.api.nvim_buf_set_lines(buf, line_num, line_num, false, {
+		vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
 			"[Image: Unable to display - image.nvim not available]",
 		})
 		return
 	end
 
 	if not M.is_terminal_supported() then
-		vim.api.nvim_buf_set_lines(buf, line_num, line_num, false, {
+		vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
 			"[Image: Unable to display - terminal doesn't support images]",
 		})
 		return
 	end
 
 	if vim.fn.filereadable(filepath) ~= 1 then
-		vim.api.nvim_buf_set_lines(buf, line_num, line_num, false, {
+		vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
 			"[Image: Unable to load from " .. filepath .. "]",
 		})
 		return
 	end
 
 	-- reserve exactly one blank line at `line_num`
-	vim.api.nvim_buf_set_lines(buf, line_num, line_num, false, { "" })
+	vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, { "" })
 
 	-- now hand off to image.nvim with an explicit x/y geometry
 	local img = require("image").from_file(filepath, {

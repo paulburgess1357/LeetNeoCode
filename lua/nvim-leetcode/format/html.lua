@@ -141,17 +141,25 @@ local function process_html_tags(text)
 		:gsub("<h%d>(.-)</h%d>", "\n%1\n")
 		:gsub("<p>(.-)</p>", "%1\n\n")
 		:gsub("<code>(.-)</code>", "%1")
-		:gsub("<img.-/>", function(match)
-			-- Keep image placeholders intact
-			for placeholder in match:gmatch("___IMAGE_PLACEHOLDER_%d+___") do
-				return placeholder
-			end
-			-- If no placeholder is found, just remove the tag
-			return ""
-		end)
-		:gsub("<[^>]+>", "")
+
+	-- Improved handling for img tags with placeholders
+	t = t:gsub("<img[^>]-/>", function(match)
+		-- Keep only image placeholders and preserve them exactly
+		local placeholder = match:match("___IMAGE_PLACEHOLDER_%d+___")
+		if placeholder then
+			return placeholder
+		end
+		-- If no placeholder found in this tag, remove it
+		return ""
+	end)
+
+	-- Remove any remaining HTML tags
+	t = t:gsub("<[^>]+>", "")
+
+	-- Restore protected blocks
 	t = restore_code_blocks(t, blocks)
-	-- subscript
+
+	-- Process subscripts
 	return t:gsub("<sub>(.-)</sub>", function(c)
 		return c:gsub(".", function(ch)
 			return subscript_map[ch:lower()] or ch
@@ -193,6 +201,11 @@ local function process_leetcode_patterns(text)
 		end) .. ")"
 	end)
 	out = out:gsub("\nFollow%-up:%s*\n%-+", "\nFollow-up:"):gsub("\n\n\n+", "\n\n")
+
+	-- Ensure image placeholders remain on their own lines for proper rendering
+	out = out:gsub("(___IMAGE_PLACEHOLDER_%d+___)", "\n%1\n")
+	out = out:gsub("\n\n\n+", "\n\n") -- Clean up any excess newlines
+
 	return out
 end
 
