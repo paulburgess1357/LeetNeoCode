@@ -38,8 +38,9 @@ function M.setup_highlighting()
   -- Get configuration values with defaults
   local start_marker = vim.fn.escape(C.code_block_start or "⌊", "/")
   local end_marker = vim.fn.escape(C.code_block_end or "⌋", "/")
-  local color = C.code_block_color or "#e6c07a"
+  local color = C.code_block_color or (C.colors and C.colors.problem_code_block) or "#e6c07a"
   local style = C.code_block_style or "italic"
+  local colors = C.colors or {}
 
   -- Create the highlighting command
   local highlighting_cmd = string.format([[
@@ -64,22 +65,40 @@ function M.setup_highlighting()
 
     setlocal conceallevel=2 concealcursor=nc
     setlocal nowrap
-
-    highlight ProblemTitle         guifg=#ff7a6c gui=bold
-    highlight ProblemSection       guifg=#d8a657 gui=bold
-    highlight ProblemConstraints   guifg=#89b482
-    highlight ProblemConstraintNum guifg=#d8a657 gui=bold
-    highlight ProblemFollowup      guifg=#d8a657 gui=bold
-    highlight ProblemExample       guifg=#a9b665 gui=bold
-    highlight ProblemBullet        guifg=#d3869b
-    highlight ProblemInput         guifg=#e78a4e
-    highlight ProblemOutput        guifg=#ea6962
-    highlight ProblemExplanation   guifg=#89b482
-    highlight ProblemMath          guifg=#d3869b
-    highlight ProblemNumber        guifg=#d8a657 gui=bold
-    highlight ProblemSuperscript   guifg=#d8a657
-    highlight ProblemVariable      guifg=#7daea3
   ]], start_marker, end_marker, color, style)
+
+  -- Add highlighting commands with configurable colors
+  highlighting_cmd = highlighting_cmd .. string.format([[
+
+    highlight ProblemTitle         guifg=%s gui=bold
+    highlight ProblemSection       guifg=%s gui=bold
+    highlight ProblemConstraints   guifg=%s
+    highlight ProblemConstraintNum guifg=%s gui=bold
+    highlight ProblemFollowup      guifg=%s gui=bold
+    highlight ProblemExample       guifg=%s gui=bold
+    highlight ProblemBullet        guifg=%s
+    highlight ProblemInput         guifg=%s
+    highlight ProblemOutput        guifg=%s
+    highlight ProblemExplanation   guifg=%s
+    highlight ProblemMath          guifg=%s
+    highlight ProblemNumber        guifg=%s gui=bold
+    highlight ProblemSuperscript   guifg=%s
+    highlight ProblemVariable      guifg=%s
+  ]],
+    colors.problem_title or "#ff7a6c",
+    colors.problem_section or "#d8a657",
+    colors.problem_constraints or "#89b482",
+    colors.problem_constraint_num or "#d8a657",
+    colors.problem_followup or "#d8a657",
+    colors.problem_example or "#a9b665",
+    colors.problem_bullet or "#d3869b",
+    colors.problem_input or "#e78a4e",
+    colors.problem_output or "#ea6962",
+    colors.problem_explanation or "#89b482",
+    colors.problem_math or "#d3869b",
+    colors.problem_number or "#d8a657",
+    colors.problem_superscript or "#d8a657",
+    colors.problem_variable or "#7daea3")
 
   vim.cmd(highlighting_cmd)
 end

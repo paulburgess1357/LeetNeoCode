@@ -32,6 +32,35 @@ local M = {
 	---------------------------------------------------------------------------
 	-- Feature toggles
 	---------------------------------------------------------------------------
+	-- Color scheme
+	---------------------------------------------------------------------------
+	-- All colors used in the plugin
+	colors = {
+		-- Problem description colors
+		problem_title = "#ff7a6c",
+		problem_section = "#d8a657",
+		problem_constraints = "#89b482",
+		problem_constraint_num = "#d8a657",
+		problem_followup = "#d8a657",
+		problem_example = "#a9b665",
+		problem_bullet = "#d3869b",
+		problem_input = "#e78a4e",
+		problem_output = "#ea6962",
+		problem_explanation = "#89b482",
+		problem_math = "#d3869b",
+		problem_number = "#d8a657",
+		problem_superscript = "#d8a657",
+		problem_variable = "#7daea3",
+		problem_code_block = "#e6c07a",
+
+		-- Metadata colors
+		metadata_line = "#d8a657",
+		difficulty_line = "#a9b665",
+		tags_line = "#7daea3",
+		user_tags_line = "#e78a4e",
+	},
+
+	---------------------------------------------------------------------------
 	include_problem_metadata = true, -- Include problem metadata
 	include_leetcode_tags = true, -- Include LC tags
 	include_user_tags = true, -- "User Tags:" stub
