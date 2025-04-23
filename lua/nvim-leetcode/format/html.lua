@@ -35,7 +35,14 @@ end
 
 -- Setup syntax highlighting for problem description
 function M.setup_highlighting()
-  vim.cmd([[
+  -- Get configuration values with defaults
+  local start_marker = vim.fn.escape(C.code_block_start or "⌊", "/")
+  local end_marker = vim.fn.escape(C.code_block_end or "⌋", "/")
+  local color = C.code_block_color or "#e6c07a"
+  local style = C.code_block_style or "italic"
+
+  -- Create the highlighting command
+  local highlighting_cmd = string.format([[
     syntax match ProblemTitle       /^Description$/
     syntax match ProblemSection     /^Constraints:$/
     syntax region ProblemConstraints start=/^Constraints:$/ end=/^\s*$/ keepend
@@ -51,9 +58,9 @@ function M.setup_highlighting()
     syntax match ProblemSuperscript /[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺⁽⁾ⁿˣʸ]/
     syntax match ProblemVariable    /nums\|\<n\>\|target\|Node\.val/
 
-    " Highlight code blocks with floor/ceiling brackets using subtle color
-    syntax region ProblemCodeBlock start=/⌊/ end=/⌋/ keepend
-    highlight ProblemCodeBlock guifg=#e6c07a gui=italic
+    " Highlight code blocks with configurable markers and style
+    syntax region ProblemCodeBlock start=/%s/ end=/%s/ keepend
+    highlight ProblemCodeBlock guifg=%s gui=%s
 
     setlocal conceallevel=2 concealcursor=nc
     setlocal nowrap
@@ -72,7 +79,9 @@ function M.setup_highlighting()
     highlight ProblemNumber        guifg=#d8a657 gui=bold
     highlight ProblemSuperscript   guifg=#d8a657
     highlight ProblemVariable      guifg=#7daea3
-  ]])
+  ]], start_marker, end_marker, color, style)
+
+  vim.cmd(highlighting_cmd)
 end
 
 return M

@@ -4,6 +4,7 @@ local M = {}
 local entities = require("nvim-leetcode.format.entities")
 local superscript = require("nvim-leetcode.format.entities.superscript")
 local subscript = require("nvim-leetcode.format.entities.subscript")
+local C = require("nvim-leetcode.config")
 
 -- Extract and preserve code blocks to prevent modification
 function M.process_code_blocks(text)
@@ -17,11 +18,14 @@ function M.process_code_blocks(text)
   return out, blocks
 end
 
--- Restore code blocks back to the text with floor/ceiling brackets
+-- Restore code blocks back to the text with configured markers
 function M.restore_code_blocks(t, blocks)
+  local start_marker = C.code_block_start or "⌊" -- Default to floor bracket if not configured
+  local end_marker = C.code_block_end or "⌋" -- Default to ceiling bracket if not configured
+
   for ph, code in pairs(blocks) do
-    -- Add floor/ceiling brackets around the code content
-    t = t:gsub(ph, "⌊" .. code .. "⌋")
+    -- Add user-configured markers around the code content
+    t = t:gsub(ph, start_marker .. code .. end_marker)
   end
   return t
 end
