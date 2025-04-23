@@ -51,6 +51,10 @@ function M.setup_highlighting()
     syntax match ProblemSuperscript /[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺⁽⁾ⁿˣʸ]/
     syntax match ProblemVariable    /nums\|\<n\>\|target\|Node\.val/
 
+    " Highlight code blocks with bright yellow
+    syntax region ProblemCodeBlock start="«CODE»" end="«/CODE»" keepend
+    highlight ProblemCodeBlock guifg=#f0c674 gui=bold
+
     setlocal conceallevel=2 concealcursor=nc
     setlocal nowrap
 

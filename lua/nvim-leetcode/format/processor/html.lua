@@ -17,10 +17,11 @@ function M.process_code_blocks(text)
   return out, blocks
 end
 
--- Restore code blocks back to the text
+-- Restore code blocks back to the text with CODE markers
 function M.restore_code_blocks(t, blocks)
   for ph, code in pairs(blocks) do
-    t = t:gsub(ph, code)
+    -- Add CODE markers around the code content
+    t = t:gsub(ph, "«CODE»" .. code .. "«/CODE»")
   end
   return t
 end
