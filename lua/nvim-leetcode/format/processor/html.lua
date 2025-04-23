@@ -17,11 +17,11 @@ function M.process_code_blocks(text)
   return out, blocks
 end
 
--- Restore code blocks back to the text with CODE markers
+-- Restore code blocks back to the text with floor/ceiling brackets
 function M.restore_code_blocks(t, blocks)
   for ph, code in pairs(blocks) do
-    -- Add CODE markers around the code content
-    t = t:gsub(ph, "«CODE»" .. code .. "«/CODE»")
+    -- Add floor/ceiling brackets around the code content
+    t = t:gsub(ph, "⌊" .. code .. "⌋")
   end
   return t
 end
