@@ -1,4 +1,4 @@
-# nvim-leetcode
+# nvim-leetcode (UNDER CONSTRUCTION!!)
 
 A lightweight, distraction-free Neovim plugin for viewing and writing LeetCode code in your favorite editor.
 
