@@ -9,166 +9,166 @@ local M = {}
 
 -- Prepare solution directory for a problem
 function M.prepare_solution_dir(num, title, slug)
-  local safe_title = (title or slug):gsub("%W+", "_"):gsub("^_+", ""):gsub("_+$", "")
-  local sol_base = cache.get_solution_dir()
+	local safe_title = (title or slug):gsub("%W+", "_"):gsub("^_+", ""):gsub("_+$", "")
+	local sol_base = cache.get_solution_dir()
 
-  if vim.fn.isdirectory(sol_base) == 0 then
-    vim.fn.mkdir(sol_base, "p")
-  end
+	if vim.fn.isdirectory(sol_base) == 0 then
+		vim.fn.mkdir(sol_base, "p")
+	end
 
-  local prob_dir = sol_base .. "/LC" .. num .. "_" .. safe_title
-  if vim.fn.isdirectory(prob_dir) == 0 then
-    vim.fn.mkdir(prob_dir, "p")
-  end
+	local prob_dir = sol_base .. "/LC" .. num .. "_" .. safe_title
+	if vim.fn.isdirectory(prob_dir) == 0 then
+		vim.fn.mkdir(prob_dir, "p")
+	end
 
-  return prob_dir
+	return prob_dir
 end
 
 -- Find the dependencies directory
 function M.find_dependencies_dir()
-  -- Find the plugin installation path
-  local plugin_paths = {
-    -- Check LazyVim path first
-    vim.fn.expand("~/.local/share/nvim/lazy/nvim-leetcode/lua/nvim-leetcode/dependencies"),
-    -- Check Packer path
-    vim.fn.expand("~/.local/share/nvim/site/pack/packer/start/nvim-leetcode/lua/nvim-leetcode/dependencies"),
-    -- Check local repo path
-    vim.fn.expand("~/Repos/nvim-leetcode/lua/nvim-leetcode/dependencies"),
-    -- Check built-in module path (fallback)
-    C.get_dependencies_dir(),
-  }
+	-- Find the plugin installation path
+	local plugin_paths = {
+		-- Check LazyVim path first
+		vim.fn.expand("~/.local/share/nvim/lazy/nvim-leetcode/lua/nvim-leetcode/dependencies"),
+		-- Check Packer path
+		vim.fn.expand("~/.local/share/nvim/site/pack/packer/start/nvim-leetcode/lua/nvim-leetcode/dependencies"),
+		-- Check local repo path
+		vim.fn.expand("~/Repos/nvim-leetcode/lua/nvim-leetcode/dependencies"),
+		-- Check built-in module path (fallback)
+		C.get_dependencies_dir(),
+	}
 
-  for _, path in ipairs(plugin_paths) do
-    if vim.fn.isdirectory(path) == 1 then
-      return path
-    end
-  end
+	for _, path in ipairs(plugin_paths) do
+		if vim.fn.isdirectory(path) == 1 then
+			return path
+		end
+	end
 
-  vim.notify("Could not find dependencies directory. Symlinks may not work.", vim.log.levels.WARN)
-  return C.get_dependencies_dir()
+	vim.notify("Could not find dependencies directory. Symlinks may not work.", vim.log.levels.WARN)
+	return C.get_dependencies_dir()
 end
 
 -- Setup dependencies (symlinks or copies)
 function M.setup_dependencies(prob_dir)
-  local dep_dir = M.find_dependencies_dir()
+	local dep_dir = M.find_dependencies_dir()
 
-  for _, fname in ipairs({
-    "lc_includes.h",
-    ".clangd",
-    ".clang-format",
-    ".clang-tidy",
-  }) do
-    local src = dep_dir .. "/" .. fname
-    local dst = prob_dir .. "/" .. fname
+	for _, fname in ipairs({
+		"lc_includes.h",
+		".clangd",
+		".clang-format",
+		".clang-tidy",
+	}) do
+		local src = dep_dir .. "/" .. fname
+		local dst = prob_dir .. "/" .. fname
 
-    -- Check if source file exists
-    if vim.fn.filereadable(src) == 1 then
-      -- Remove existing file if it exists
-      if vim.fn.filereadable(dst) == 1 then
-        vim.fn.delete(dst)
-      end
+		-- Check if source file exists
+		if vim.fn.filereadable(src) == 1 then
+			-- Remove existing file if it exists
+			if vim.fn.filereadable(dst) == 1 then
+				vim.fn.delete(dst)
+			end
 
-      -- Create an absolute symlink using direct shell command
-      local cmd = string.format("ln -sf '%s' '%s'", src, dst)
-      local success, err, code = os.execute(cmd)
+			-- Create an absolute symlink using direct shell command
+			local cmd = string.format("ln -sf '%s' '%s'", src, dst)
+			local success, err, code = os.execute(cmd)
 
-      if not success then
-        vim.notify("Failed to create symlink: " .. (err or "Unknown error"), vim.log.levels.WARN)
+			if not success then
+				vim.notify("Failed to create symlink: " .. (err or "Unknown error"), vim.log.levels.WARN)
 
-        -- Fallback to direct copy
-        local content = vim.fn.readfile(src)
-        local write_ok = pcall(vim.fn.writefile, content, dst)
+				-- Fallback to direct copy
+				local content = vim.fn.readfile(src)
+				local write_ok = pcall(vim.fn.writefile, content, dst)
 
-        if not write_ok then
-          vim.notify(
-            "Failed to copy " .. fname .. ". File dependencies may be missing.",
-            vim.log.levels.ERROR
-          )
-        else
-          vim.notify("Copied " .. fname .. " instead of symlink", vim.log.levels.INFO)
-        end
-      end
-    else
-      vim.notify("Source file not found: " .. src, vim.log.levels.WARN)
-    end
-  end
+				if not write_ok then
+					vim.notify(
+						"Failed to copy " .. fname .. ". File dependencies may be missing.",
+						vim.log.levels.ERROR
+					)
+				else
+					vim.notify("Copied " .. fname .. " instead of symlink", vim.log.levels.INFO)
+				end
+			end
+		else
+			vim.notify("Source file not found: " .. src, vim.log.levels.WARN)
+		end
+	end
 end
 
 -- Fetch problem data (description and code)
 function M.fetch_problem_data(slug)
-  local problem_data = {}
-  do
-    local ok, result = pcall(pull.description.fetch_description, slug)
-    problem_data = ok and type(result) == "table" and result or { content = "" }
-    if problem_data.content == "" then
-      vim.notify("Could not fetch description for problem", vim.log.levels.WARN)
-    end
-  end
+	local problem_data = {}
+	do
+		local ok, result = pcall(pull.description.fetch_description, slug)
+		problem_data = ok and type(result) == "table" and result or { content = "" }
+		if problem_data.content == "" then
+			vim.notify("Could not fetch description for problem", vim.log.levels.WARN)
+		end
+	end
 
-  local snippets
-  do
-    local ok, res = pcall(pull.code.fetch_stub, slug)
-    snippets = ok and res or nil
-    if not snippets then
-      vim.notify("Could not fetch code stub for problem", vim.log.levels.WARN)
-    end
-  end
+	local snippets
+	do
+		local ok, res = pcall(pull.code.fetch_stub, slug)
+		snippets = ok and res or nil
+		if not snippets then
+			vim.notify("Could not fetch code stub for problem", vim.log.levels.WARN)
+		end
+	end
 
-  return problem_data, snippets
+	return problem_data, snippets
 end
 
 -- Determine next solution version and save file
 function M.save_solution_file(prob_dir, snippets, problem_data)
-  if not snippets then
-    return nil, 0
-  end
+	if not snippets then
+		return nil, 0
+	end
 
-  -- Find next version number
-  local max_index = 0
-  for _, path in ipairs(vim.fn.globpath(prob_dir, "Solution_*." .. C.default_language, false, true)) do
-    local name = vim.fn.fnamemodify(path, ":t")
-    local idx = tonumber(name:match("^Solution_(%d+)")) or 0
-    if idx > max_index then
-      max_index = idx
-    end
-  end
+	-- Find next version number
+	local max_index = 0
+	for _, path in ipairs(vim.fn.globpath(prob_dir, "Solution_*." .. C.default_language, false, true)) do
+		local name = vim.fn.fnamemodify(path, ":t")
+		local idx = tonumber(name:match("^Solution_(%d+)")) or 0
+		if idx > max_index then
+			max_index = idx
+		end
+	end
 
-  local version = max_index + 1
-  local fname = string.format("Solution_%d.%s", version, C.default_language)
-  local fpath = prob_dir .. "/" .. fname
+	local version = max_index + 1
+	local fname = string.format("Solution_%d.%s", version, C.default_language)
+	local fpath = prob_dir .. "/" .. fname
 
-  -- Save solution file
-  local f = io.open(fpath, "w")
-  if f then
-    -- Write the solution template first
-    f:write('#include "lc_includes.h"\n\n')
-    f:write(snippets)
-    f:write("\n\n")
+	-- Save solution file
+	local f = io.open(fpath, "w")
+	if f then
+		-- Write the solution template first
+		f:write('#include "lc_includes.h"\n\n')
+		f:write(snippets)
+		f:write("\n\n")
 
-    -- Add comment with hidden fold markers
-    f:write("\n")
-    f:write("/*{{{")
+		-- Add comment with hidden fold markers
+		f:write("\n")
+		f:write("/*{{{")
 
-    -- Add problem metadata to comment
-    if problem_data.title and problem_data.difficulty and problem_data.questionId then
-      f:write("\n" .. format.format_metadata(problem_data))
-      f:write("\n" .. format.format_difficulty(problem_data))
-    end
+		-- Add problem metadata to comment
+		if problem_data.title and problem_data.difficulty and problem_data.questionId then
+			f:write("\n" .. format.format_metadata(problem_data))
+			f:write("\n" .. format.format_difficulty(problem_data))
+		end
 
-    -- Add LeetCode tags to comment
-    if problem_data.topicTags then
-      f:write("\n" .. format.format_tags(problem_data.topicTags))
-    end
+		-- Add LeetCode tags to comment
+		if problem_data.topicTags then
+			f:write("\n" .. format.format_tags(problem_data.topicTags))
+		end
 
-    -- Add user tags section to comment
-    f:write("\n" .. format.create_user_tags_section())
+		-- Add user tags section to comment
+		f:write("\n" .. format.create_user_tags_section())
 
-    f:write("\n}}}*/")
+		f:write("\n}}}*/")
 
-    f:close()
-  end
+		f:close()
+	end
 
-  return fpath, version
+	return fpath, version
 end
 
 return M
