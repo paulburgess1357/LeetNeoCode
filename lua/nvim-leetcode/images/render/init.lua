@@ -9,7 +9,25 @@ end
 
 -- Check if terminal supports images (Kitty)
 function M.is_terminal_supported()
-	return os.getenv("KITTY_WINDOW_ID") ~= nil
+
+  for _, check in ipairs(C.image_terminals or {}) do
+
+    local v = os.getenv(check.var)
+
+    if v then
+
+      if not check.match or v:find(check.match, 1, true) then
+
+        return true
+
+      end
+
+    end
+
+  end
+
+  return false
+
 end
 
 -- Render an image in the buffer directly from URL

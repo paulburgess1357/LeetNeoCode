@@ -71,6 +71,22 @@ local M = {
 	-- Image handling
 	---------------------------------------------------------------------------
 	enable_images = true,
+	-- Terminals to check for inline‐image support
+
+	-- each entry: { var = ENV_VAR_NAME, [match = SUBSTRING] }
+
+	image_terminals = {
+
+		{ var = "TERM",            match = "kitty" },   -- TERM contains "kitty"
+
+		{ var = "KITTY_WINDOW_ID" },                     -- presence suffices
+
+	},
+
+	-- toggle whether to notify about image support at startup
+
+	notify_on_image_support = true,
+
 	use_direct_urls = true,
 	image_render_delay = 100, -- ms
 	image_max_width = nil, -- nil → auto

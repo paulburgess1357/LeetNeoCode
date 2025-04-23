@@ -25,13 +25,17 @@ function M.setup(user_config)
 	-- Initialize cache directories
 	M.config.ensure_cache_dirs()
 
-	-- Check for image.nvim dependency
-	local has_image = pcall(require, "image")
-	if not has_image and M.config.enable_images then
-		vim.notify(
-			"image.nvim not found but enable_images is true. Images will be displayed as text placeholders.",
-			vim.log.levels.WARN
-		)
+	-- ▶ terminal support for inline images
+	local can_display = M.images.is_terminal_supported()
+	if M.config.enable_images and M.config.notify_on_image_support then
+		if can_display then
+			vim.notify("✅ Your terminal supports inline images!", vim.log.levels.INFO)
+		else
+			vim.notify(
+				"⚠️ Your terminal does NOT support inline images; using text placeholders.",
+				vim.log.levels.WARN
+			)
+		end
 	end
 
 	-- Register commands
