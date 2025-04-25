@@ -94,8 +94,8 @@ local M = {
 	image_preserve_aspect_ratio = true,
 
 	-- Fold markers for solution metadata\n	fold_marker_start = "BEGIN_METADATA",\n	fold_marker_end = "END_METADATA",
-	fold_marker_start = "{{{",
-	fold_marker_end = "}}}",
+	fold_marker_start = "▼",
+	fold_marker_end = "▲",
 	image_auto_render_on_win_focus = true,
 
 	---------------------------------------------------------------------------
