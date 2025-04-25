@@ -92,6 +92,10 @@ local M = {
 	image_max_height = 20,
 	image_right_after_separator = true,
 	image_preserve_aspect_ratio = true,
+
+	-- Fold markers for solution metadata\n	fold_marker_start = "BEGIN_METADATA",\n	fold_marker_end = "END_METADATA",
+	fold_marker_start = "{{{",
+	fold_marker_end = "}}}",
 	image_auto_render_on_win_focus = true,
 
 	---------------------------------------------------------------------------

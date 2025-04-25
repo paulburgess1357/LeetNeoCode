@@ -71,18 +71,26 @@ function M.setup_solution_highlighting()
 end
 
 -- Setup fold markers for solution files
+-- Function replaced by update script
+-- Setup fold markers for solution files
 function M.setup_fold_settings()
+  local C = require("nvim-leetcode.config")
+  -- Use safe fallbacks for fold markers
+  local fold_start = C.fold_marker_start or "BEGIN_METADATA"
+  local fold_end = C.fold_marker_end or "END_METADATA"
+
   vim.cmd([[
     " Autocommands for LeetCode solution files
     augroup LeetCodeSolutions
       autocmd!
-      " Set fold method for CPP files in LeetCode solutions directory
+      " Set fold method and markers for CPP files in LeetCode solutions directory
       autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp setlocal foldmethod=marker
+      autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp setlocal foldmarker=]]..fold_start..[[,]]..fold_end..[[
       " Close all folds when opening a solution file
       autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp normal! zM
       " Hide fold markers to make them less visually distracting
-      autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp syntax match Comment /{\{3}/ conceal
-      autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp syntax match Comment /}\{3}/ conceal
+      autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp syntax match Comment /]]..fold_start..[[/ conceal
+      autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp syntax match Comment /]]..fold_end..[[/ conceal
       autocmd BufReadPost,BufNewFile */nvim-leetcode/solutions/**/*.cpp setlocal conceallevel=2
     augroup END
   ]])

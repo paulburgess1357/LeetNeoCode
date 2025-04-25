@@ -118,6 +118,8 @@ function M.fetch_problem_data(slug)
 end
 
 -- Determine next solution version and save file
+-- Function replaced by update script
+-- Save solution file with clean fold markers
 function M.save_solution_file(prob_dir, snippets, problem_data)
   if not snippets then
     return nil, 0
@@ -145,9 +147,13 @@ function M.save_solution_file(prob_dir, snippets, problem_data)
     f:write(snippets)
     f:write("\n\n")
 
-    -- Add comment with hidden fold markers
+    -- Use safe fallbacks for fold markers
+    local fold_start = C.fold_marker_start or "BEGIN_METADATA"
+    local fold_end = C.fold_marker_end or "END_METADATA"
+
+    -- Add metadata comment with fold markers
     f:write("\n")
-    f:write("/*{{{")
+    f:write("/* " .. fold_start)
 
     -- Add problem metadata to comment
     if problem_data.title and problem_data.difficulty and problem_data.questionId then
@@ -163,7 +169,7 @@ function M.save_solution_file(prob_dir, snippets, problem_data)
     -- Add user tags section to comment
     f:write("\n" .. format.create_user_tags_section())
 
-    f:write("\n}}}*/")
+    f:write("\n" .. fold_end .. " */")
 
     f:close()
   end
