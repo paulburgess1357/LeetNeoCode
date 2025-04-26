@@ -1,24 +1,28 @@
-# nvim-leetcode (UNDER CONSTRUCTION!!)
+# nvim‑leetcode
 
-A lightweight, distraction-free Neovim plugin for viewing and writing LeetCode code in your favorite editor.
+_A distraction‑free way to fetch, read and solve LeetCode problems **inside Neovim**._
 
-**Note:** This plugin is designed for offline problem viewing and solution development only. It does not execute code against LeetCode test cases or support premium problems. For a more feature-rich alternative with test execution capabilities, consider [leetcode.nvim](https://github.com/kawre/leetcode.nvim).
+> **Note** – This plugin **does not compile or run your code** against LeetCode’s judge.
+> If you need in‑editor execution and submission, check out
+> [`kawre/leetcode.nvim`](https://github.com/kawre/leetcode.nvim).
 
-TODO: Add screenshots with kitty terminal
+---
 
 ## Features
 
-- Fetch LeetCode problem metadata and cache it locally
-- Open problem descriptions with syntax highlighting
-- Automatically fetch problem-specific starter code
-- Track multiple solution attempts per problem
-- Includes problem metadata, difficulty level, and LeetCode tags
-- Support for user-defined tags for personal organization
-- Support for C++ (default, configurable)
+- Pull the entire public LeetCode problem set into a local JSON cache
+- Open a problem description side‑by‑side with starter code – **one command, one tab**
+- Highlighted, nicely wrapped markdown with optional inline images<sup>†</sup>
+- Per‑problem solution folder with automatic versioning (`Solution_1.cpp`, `Solution_2.cpp`, …)
+- Metadata comment (difficulty, tags, your own tags) folded at the bottom of every file
+
+<sup>†</sup> Images render only if you use a _Kitty‑protocol_ terminal and have [`image.nvim`](https://github.com/3rd/image.nvim) installed; otherwise we show lightweight placeholders.
+
+---
 
 ## Installation
 
-### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
+### lazy.nvim
 
 ```lua
 {
@@ -29,140 +33,166 @@ TODO: Add screenshots with kitty terminal
 }
 ```
 
-### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
+### packer.nvim
 
 ```lua
-use {
+use({
   "paulburgess1357/nvim-leetcode",
   config = function()
     require("nvim-leetcode").setup()
-  end
-}
-```
-
-## Configuration
-
-You can customize the plugin by passing options to the setup function:
-
-```lua
-require("nvim-leetcode").setup({
-  -- Default language for solutions
-  default_language = "cpp", -- Options: "cpp", "java", "python", "python3", etc.
-
-  -- XDG-compliant paths
-  cache_dir = vim.fn.expand("~/.cache/nvim-leetcode"),
-
-  -- Cache expiry in days
-  cache_expiry_days = 14,
-
-  -- Split ratio for description window
-  description_split = 0.35,
-
-  -- Metadata and tags configuration
-  include_problem_metadata = true,     -- Include problem metadata
-  include_leetcode_tags = true,        -- Include LeetCode tags
-  include_user_tags = true,            -- Include user tags section
-  metadata_at_bottom = true,           -- Put metadata at the bottom of the file
-  metadata_comment_style = "multi",    -- Use multiline comment style
+  end,
 })
 ```
 
-## Usage
+---
 
-### Commands
+## Configuration
 
-- `:LC Pull` - Fetch and cache the full list of LeetCode problems
-- `:LC <number>` - Open the problem with the specified number
-
-### Searching by Tags
-
-To search for problems by tag, you can use standard Vim/Neovim commands:
-
-```vim
-" Search for problems with the "Dynamic Programming" tag
-:grep -r "LC Tags:.*Dynamic Programming" --include="Solution_*.cpp" ~/.cache/nvim-leetcode/solutions
-
-" Search for problems with user tags containing "Favorite"
-:grep -r "User Tags:.*Favorite" --include="Solution_*.cpp" ~/.cache/nvim-leetcode/solutions
-
-" Use Telescope for a nicer UI (if you have Telescope installed)
-:Telescope grep_string search="LC Tags:.*Array"
-```
-
-### Example Workflow
-
-1. Pull the problem list: `:LC Pull`
-2. Open a problem: `:LC 1`
-3. The plugin will open a split view with the problem description on the left and solution code on the right
-4. Start coding your solution in the right pane
-5. When you want to attempt another solution, run `:LC 1` again to create a new solution file
-
-### Working with Tags and Metadata
-
-Each solution file includes problem metadata and tags in a folded comment section at the bottom:
-
-```cpp
-#include "lc_includes.h"
-
-class Solution {
-public:
-    vector<int> twoSum(vector<int>& nums, int target) {
-        // Your solution here
-    }
-};
-
-/*{{{
-* Problem: LC#1 Two Sum
-* Difficulty: Easy
-* LC Tags: Array, Hash Table
-* User Tags:
-}}}*/
-```
-
-- **Viewing metadata**: Use `zo` to open the folded section at the bottom of the file
-- **Adding user tags**: Open the fold and add your own tags on the "User Tags:" line
-- **Searching by tag**: Use grep or your editor's search functionality to find problems by tag
-
-## Where Files Are Stored
-
-- Problem metadata: `~/.cache/nvim-leetcode/meta/`
-- Solutions: `~/.cache/nvim-leetcode/solutions/LC{number}_{title}/`
-
-## Keyboard Shortcuts
-
-You can add these mappings to your Neovim configuration:
+All options (with defaults) – copy the block and tweak what you need:
 
 ```lua
--- LeetCode Pull problems
-vim.keymap.set("n", "<leader>ll", "<cmd>LC Pull<cr>", { desc = "LeetCode: Pull problems" })
+require("nvim-leetcode").setup({
+  ---------------------------------------------------------------------------
+  -- Core
+  ---------------------------------------------------------------------------
+  default_language      = "cpp",   -- any of: cpp, python, java, javascript, go …
+  cache_dir             = vim.fn.expand("~/.cache/nvim-leetcode"),
+  cache_subdir          = "meta",
+  cache_file            = "leetcode_cache.json",
+  cache_expiry_days     = 14,
+  solutions_subdir      = "solutions",
+  images_subdir         = "images",
+  description_split     = 0.35,   -- left/right split ratio (0‑1)
 
--- LeetCode Open problem
-vim.keymap.set("n", "<leader>lp", function()
-  -- Prompt for a problem number
-  vim.ui.input({ prompt = "Problem Number: " }, function(input)
-    if input and input:match("^%d+$") then
-      vim.cmd("LC " .. input)
-    end
-  end)
-end, { desc = "LeetCode: Open problem" })
+  ---------------------------------------------------------------------------
+  -- Display Tweaks
+  ---------------------------------------------------------------------------
+  enable_custom_wrap    = true,   -- hard‑wrap description text
+  custom_wrap_offset    = 0.02,
+  colors = {                     -- change any of these to suit your colourscheme
+    problem_title           = "#ff7a6c",
+    problem_section         = "#d8a657",
+    problem_constraints     = "#89b482",
+    problem_constraint_num  = "#d8a657",
+    problem_followup        = "#d8a657",
+    problem_example         = "#a9b665",
+    problem_bullet          = "#d3869b",
+    problem_input           = "#d19a66",
+    problem_output          = "#98c379",
+    problem_explanation     = "#e5c07b",
+    problem_math            = "#d3869b",
+    problem_number          = "#d8a657",
+    problem_superscript     = "#d8a657",
+    problem_variable        = "#7daea3",
+    problem_code_block      = "#e6c07a",
 
--- Search for problems by tag
-vim.keymap.set("n", "<leader>lt", function()
-  vim.ui.input({ prompt = "Search for tag: " }, function(input)
-    if input and input ~= "" then
-      -- Search in solutions directory
-      vim.cmd('grep -r "LC Tags:.*' .. input .. '" --include="Solution_*.cpp" ' ..
-              vim.fn.expand("~/.cache/nvim-leetcode/solutions"))
-    end
-  end)
-end, { desc = "LeetCode: Search by tag" })
+    metadata_line           = "#d8a657",
+    difficulty_line         = "#a9b665",
+    tags_line               = "#7daea3",
+    user_tags_line          = "#e78a4e",
+  },
+
+  ---------------------------------------------------------------------------
+  -- Metadata section
+  ---------------------------------------------------------------------------
+  include_problem_metadata = true,
+  include_leetcode_tags    = true,
+  include_user_tags        = true,
+  metadata_at_bottom       = true,
+  metadata_comment_style   = "multi", -- "multi" | "single"
+
+  ---------------------------------------------------------------------------
+  -- Images (Kitty only)
+  ---------------------------------------------------------------------------
+  enable_images            = true,
+  image_terminals          = { { var = "TERM", match = "kitty" }, { var = "KITTY_WINDOW_ID" } },
+  notify_on_image_support  = true,
+  use_direct_urls          = true,
+  image_render_delay       = 100, -- ms
+  image_max_width          = nil, -- fixed px; nil → auto
+  image_max_height         = 20,
+  image_max_width_pct      = 40,  -- relative to window (%)
+  image_max_height_pct     = 30,
+  image_right_after_separator = true,
+  image_preserve_aspect_ratio = true,
+  image_auto_render_on_win_focus = true,
+
+  ---------------------------------------------------------------------------
+  -- Code‑block markers in descriptions
+  ---------------------------------------------------------------------------
+  code_block_start         = "{",
+  code_block_end           = "}",
+  code_block_color         = "#e6c07a",
+  code_block_style         = "italic",
+})
 ```
+
+### Language identifier
+
+`default_language` accepts the LeetCode _slug_ for the language you want your starter code in:
+
+| Value          | Language        | File extension |
+| -------------- | --------------- | -------------- |
+| `"cpp"`        | C++17/20/23     | `.cpp`         |
+| `"python"`     | Python 3        | `.py`          |
+| `"java"`       | Java 17         | `.java`        |
+| `"javascript"` | ECMAScript 2021 | `.js`          |
+| `"go"`         | Go 1.20         | `.go`          |
+| …and more      |                 |                |
+
+---
+
+## Usage
+
+| Command        | Action                                                     |
+| -------------- | ---------------------------------------------------------- |
+| `:LC Pull`     | (re‑)download the full problem list into the cache         |
+| `:LC <number>` | Open Problem – if the cache is stale it is refreshed first |
+
+### Typical workflow 📚 (no execution, just editing)
+
+1. `:LC Pull` – fetch metadata (run again occasionally to refresh)
+2. `:LC 1` – opens “**Two Sum**” in a new tab: left‑pane description, right‑pane `Solution_1.cpp`
+3. Solve the problem locally, build / test with your own tools
+4. Need another attempt? Run `:LC 1` again and you’ll get `Solution_2.cpp`
+5. Grep or Telescope through `solutions/` when you want to revisit old work
+
+---
+
+## File Layout
+
+```
+~/.cache/nvim-leetcode/
+├── meta/
+│   └── leetcode_cache.json
+└── solutions/
+    └── LC1_Two_Sum/
+        ├── Solution_1.cpp
+        ├── Solution_2.cpp
+        ├── lc_includes.h -> symlink to plugin/dependencies
+        └── .clang-format
+```
+
+_(Example for C++ – other languages get their own helper files.)_
+
+---
 
 ## Requirements
 
-- Neovim >= 0.7.0
-- curl (used for API requests)
+- **Neovim ≥ 0.8**
+- `curl` in your `$PATH`
+- _(optional)_ [**image.nvim**](https://github.com/3rd/image.nvim) **+** a terminal that supports the [Kitty graphics protocol](https://sw.kovidgoyal.net/kitty/graphics‑protocol/) for inline images.
+
+---
 
 ## License
 
-The Unlicense
+[The Unlicense](https://unlicense.org/) – public domain, no strings attached.
+
+---
+
+## Screenshots
+
+_(coming soon)_
+
+>
