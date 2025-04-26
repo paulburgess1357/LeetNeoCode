@@ -11,18 +11,24 @@ Checks: >
   portability-*,
   security-*,
   hicpp-*,
+
+  # ---------- explicit removals ----------
   -modernize-use-trailing-return-type,
+  -readability-identifier-length,        # no “identifier length” warnings
   -hicpp-braces-around-statements,
   -readability-implicit-bool-conversion,
   -readability-braces-around-statements,
-  -misc-no-recursion,
-HeaderFilterRegex: '.*'
+  -misc-no-recursion
+
+HeaderFilterRegex: ".*"
 FormatStyle: file
+
 CheckOptions:
   - key: cppcoreguidelines-avoid-magic-numbers.IgnoreNumbers
-    value: '0,1'
+    value: "0,1"
   - key: readability-identifier-naming.ClassCase
-    value: 'CamelCase'
+    value: "CamelCase"
   - key: readability-identifier-naming.FunctionCase
-    value: 'camelBack'
-#WarningsAsErrors: '*'
+    value: "camelBack"
+# WarningsAsErrors: '*'   # uncomment if you want every remaining warning to be an error
+
