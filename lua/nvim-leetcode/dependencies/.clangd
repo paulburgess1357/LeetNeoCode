@@ -3,7 +3,7 @@ CompileFlags:
       -std=c++23,
       -I./include,
 
-      # ---------------- enabled warnings ----------------
+      # ── enabled warnings ───────────────────────────────────────────────
       -Wall,
       -Wextra,
       -Wpedantic,
@@ -18,19 +18,23 @@ CompileFlags:
       -Wunreachable-code,
       -Wdouble-promotion,
 
-      # ---------------- disables / tweaks ----------------
-      -Wno-unused-parameter, # ← hides the “unused parameter” notes
+      # ── disabled compiler notes ────────────────────────────────────────
+      -Wno-unused-parameter,
+      -Wno-return-type,
       -Wno-c++98-compat,
-      # -Werror,                      # promote warnings to errors (off)
-      # -Wno-sign-compare,
-      # -Wno-sign-conversion,
-      # -Wno-shorten-64-to-32,
+      -Wno-c++98-compat-pedantic,
+      -Wno-newline-eof,
     ]
 
 Diagnostics:
+  UnusedIncludes: None #  turn off “header not used directly”
+
   ClangTidy:
-    FastCheckFilter: "None" # keep quick-check speed
+    FastCheckFilter: "None"
     Remove: [
         modernize-use-trailing-return-type,
-        readability-identifier-length, # ← suppresses that specific rule
+        readability-identifier-length,
+        modernize-use-equals-default,
+        hicpp-use-equals-default, # ← NEW: hides “use = default” note
+        performance-unnecessary-value-param,
       ]

@@ -12,12 +12,14 @@ Checks: >
   security-*,
   hicpp-*,
 
-  # ---------- explicit removals ----------
-  -modernize-use-trailing-return-type,
-  -readability-identifier-length,        # no “identifier length” warnings
-  -hicpp-braces-around-statements,
-  -readability-implicit-bool-conversion,
-  -readability-braces-around-statements,
+  # ── explicit removals ───────────────────────────────
+  -modernize-use-trailing-return-type
+  -readability-identifier-length
+  -modernize-use-equals-default
+  -hicpp-use-equals-default          # ← NEW
+  -hicpp-braces-around-statements
+  -readability-implicit-bool-conversion
+  -readability-braces-around-statements
   -misc-no-recursion
 
 HeaderFilterRegex: ".*"
@@ -30,5 +32,5 @@ CheckOptions:
     value: "CamelCase"
   - key: readability-identifier-naming.FunctionCase
     value: "camelBack"
-# WarningsAsErrors: '*'   # uncomment if you want every remaining warning to be an error
+# WarningsAsErrors: '*'
 
