@@ -68,6 +68,7 @@ function M.setup_dependencies(prob_dir)
 
   -- Language-specific dependency files
   local dependencies = {
+  local dependencies = {
     cpp = {
       { src = "lc_includes.h", dst = "lc_includes.h" },
       { src = ".clangd", dst = ".clangd" },
@@ -75,25 +76,33 @@ function M.setup_dependencies(prob_dir)
       { src = ".clang-tidy", dst = ".clang-tidy" }
     },
     python = {
-      { src = "lc_includes.py", dst = "lc_includes.py" }
+      { src = "lc_includes.py", dst = "lc_includes.py" },
+      { src = "pyproject.toml", dst = "pyproject.toml" }
     },
     java = {
-      { src = "LCIncludes.java", dst = "LCIncludes.java" }
+      { src = "LCIncludes.java", dst = "LCIncludes.java" },
+      { src = "checkstyle.xml", dst = "checkstyle.xml" }
     },
     javascript = {
-      { src = "lc_includes.js", dst = "lc_includes.js" }
+      { src = "lc_includes.js", dst = "lc_includes.js" },
+      { src = ".eslintrc.js", dst = ".eslintrc.js" },
+      { src = "tsconfig.json", dst = "tsconfig.json" }
     },
     go = {
-      { src = "lc_includes.go", dst = "lc_includes.go" }
+      { src = "lc_includes.go", dst = "lc_includes.go" },
+      { src = ".golangci.yml", dst = ".golangci.yml" }
     },
     rust = {
-      { src = "lc_includes.rs", dst = "lc_includes.rs" }
+      { src = "lc_includes.rs", dst = "lc_includes.rs" },
+      { src = ".rustfmt.toml", dst = ".rustfmt.toml" }
     },
     swift = {
-      { src = "LCIncludes.swift", dst = "LCIncludes.swift" }
+      { src = "LCIncludes.swift", dst = "LCIncludes.swift" },
+      { src = ".swiftlint.yml", dst = ".swiftlint.yml" }
     },
     csharp = {
-      { src = "LCIncludes.cs", dst = "LCIncludes.cs" }
+      { src = "LCIncludes.cs", dst = "LCIncludes.cs" },
+      { src = ".editorconfig", dst = ".editorconfig" }
     }
   }
 

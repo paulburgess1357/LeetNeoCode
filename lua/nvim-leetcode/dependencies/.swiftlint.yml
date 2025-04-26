@@ -1,0 +1,38 @@
+disabled_rules:
+  - line_length
+  - trailing_whitespace
+  - identifier_name
+  - todo
+
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - force_unwrapping
+  - missing_docs
+
+excluded:
+  - Pods
+  - fastlane
+
+force_cast: warning
+force_try: warning
+
+type_name:
+  min_length: 3
+  max_length: 50
+
+function_parameter_count:
+  warning: 8
+  error: 10
+
+file_length:
+  warning: 500
+  error: 1000
+
+nesting:
+  type_level:
+    warning: 3
+  statement_level:
+    warning: 5
+
+reporter: "xcode"
