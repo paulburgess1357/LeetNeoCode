@@ -170,8 +170,6 @@ function M.fetch_problem_data(slug)
 end
 
 -- Determine next solution version and save file
--- Function replaced by update script
--- Save solution file with clean fold markers
 function M.save_solution_file(prob_dir, snippets, problem_data)
 	if not snippets then
 		return nil, 0
@@ -179,7 +177,7 @@ function M.save_solution_file(prob_dir, snippets, problem_data)
 
 	-- Find next version number
 	local max_index = 0
-	for _, path in ipairs(vim.fn.globpath(prob_dir, "Solution_*." .. C.default_language, false, true)) do
+	for _, path in ipairs(vim.fn.globpath(prob_dir, "Solution_*.*", false, true)) do
 		local name = vim.fn.fnamemodify(path, ":t")
 		local idx = tonumber(name:match("^Solution_(%d+)")) or 0
 		if idx > max_index then
@@ -188,7 +186,35 @@ function M.save_solution_file(prob_dir, snippets, problem_data)
 	end
 
 	local version = max_index + 1
-	local fname = string.format("Solution_%d.%s", version, C.default_language)
+
+	-- Map languages to their correct file extensions
+	local extension_map = {
+		cpp = "cpp",
+		python = "py",
+		java = "java",
+		javascript = "js",
+		typescript = "ts",
+		go = "go",
+		rust = "rs",
+		swift = "swift",
+		csharp = "cs",
+		ruby = "rb",
+		kotlin = "kt",
+		php = "php",
+		dart = "dart",
+		scala = "scala",
+		c = "c",
+		objective_c = "m",
+		erlang = "erl",
+		elixir = "ex",
+		clojure = "clj",
+		haskell = "hs",
+	}
+
+	-- Get the correct file extension for the current language
+	local extension = extension_map[C.default_language] or C.default_language
+
+	local fname = string.format("Solution_%d.%s", version, extension)
 	local fpath = prob_dir .. "/" .. fname
 
 	-- Save solution file
