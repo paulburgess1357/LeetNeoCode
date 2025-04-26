@@ -90,6 +90,9 @@ local M = {
 	image_render_delay = 100, -- ms
 	image_max_width = nil, -- nil → auto
 	image_max_height = 20,
+	-- Image sizing options (percentage of window)
+	image_max_width_pct = 40, -- 40% of window width (0 to disable)
+	image_max_height_pct = 30, -- 30% of window height (0 to disable)
 	image_right_after_separator = true,
 	image_preserve_aspect_ratio = true,
 

@@ -8,42 +8,70 @@ M.problem = require("nvim-leetcode.problem")
 M.format = require("nvim-leetcode.format")
 M.images = require("nvim-leetcode.images")
 M.util = {
-  paths = require("nvim-leetcode.util.paths"),
-  notify = require("nvim-leetcode.util.notify"),
+	paths = require("nvim-leetcode.util.paths"),
+	notify = require("nvim-leetcode.util.notify"),
 }
 M.commands = require("nvim-leetcode.commands")
 
 -- Setup function with user config
 function M.setup(user_config)
-  -- Merge user config with defaults
-  if user_config then
-    for k, v in pairs(user_config) do
-      M.config[k] = v
-    end
-  end
+	-- Merge user config with defaults
+	if user_config then
+		for k, v in pairs(user_config) do
+			M.config[k] = v
+		end
+	end
 
-  -- Initialize cache directories
-  M.config.ensure_cache_dirs()
+	-- Initialize cache directories
+	M.config.ensure_cache_dirs()
 
-  -- ▶ terminal support for inline images
-  local can_display = M.images.is_terminal_supported()
-  if M.config.enable_images and M.config.notify_on_image_support then
-    if can_display then
-      vim.notify("✅ Your terminal supports inline images!", vim.log.levels.INFO)
-    else
-      vim.notify(
-        "⚠️ Your terminal does NOT support inline images; using text placeholders.",
-        vim.log.levels.WARN
-      )
-    end
-  end
+	-- Configure image.nvim if enabled
+	if M.config.enable_images then
+		local can_display = M.images.is_terminal_supported()
 
-  -- Register commands
-  M.commands.setup(M)
+		-- Try to setup image.nvim with our settings
+		local ok, img = pcall(require, "image")
+		if ok then
+			-- Configure image.nvim with our settings
+			img.setup({
+				backend = "kitty",
+				processor = "magick_cli",
+				max_width = M.config.image_max_width,
+				max_height = M.config.image_max_height,
+				max_width_window_percentage = M.config.image_max_width_pct,
+				max_height_window_percentage = M.config.image_max_height_pct,
+				window_overlap_clear_enabled = false,
+				editor_only_render_when_focused = false,
+				tmux_show_only_in_active_window = false,
+			})
 
-  -- Set up syntax highlighting for the metadata comment
-  M.format.syntax.setup_solution_highlighting()
-  M.format.syntax.setup_fold_settings()
+			--if M.config.notify_on_image_support then
+			--vim.notify("✅ Configured image.nvim with size settings: " ..
+			--  tostring(M.config.image_max_width_pct) .. "% width, " ..
+			--  tostring(M.config.image_max_height_pct) .. "% height",
+			--  vim.log.levels.INFO)
+			--end
+		end
+
+		-- Terminal support notification
+		if M.config.notify_on_image_support then
+			if can_display then
+				vim.notify("✅ Your terminal supports inline images!", vim.log.levels.INFO)
+			else
+				vim.notify(
+					"⚠️ Your terminal does NOT support inline images; using text placeholders.",
+					vim.log.levels.WARN
+				)
+			end
+		end
+	end
+
+	-- Register commands
+	M.commands.setup(M)
+
+	-- Set up syntax highlighting for the metadata comment
+	M.format.syntax.setup_solution_highlighting()
+	M.format.syntax.setup_fold_settings()
 end
 
 return M
