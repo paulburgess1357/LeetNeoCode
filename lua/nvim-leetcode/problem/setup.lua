@@ -170,6 +170,7 @@ function M.fetch_problem_data(slug)
 end
 
 -- Determine next solution version and save file
+-- Determine next solution version and save file
 function M.save_solution_file(prob_dir, snippets, problem_data)
 	if not snippets then
 		return nil, 0
@@ -252,29 +253,158 @@ function M.save_solution_file(prob_dir, snippets, problem_data)
 		f:write(snippets)
 		f:write("\n\n")
 
-		-- Use safe fallbacks for fold markers
-		local fold_start = C.fold_marker_start or "BEGIN_METADATA"
-		local fold_end = C.fold_marker_end or "END_METADATA"
+		-- Comment style based on language
+		local comment_styles = {
+			cpp = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			python = {
+				start = "'''\n" .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. "\n'''",
+			},
+			java = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			javascript = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			go = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			rust = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			swift = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			csharp = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			ruby = {
+				start = "=begin " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " =end",
+			},
+			kotlin = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			php = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			dart = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			scala = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			c = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			objective_c = {
+				start = "/* " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "* ",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " */",
+			},
+			erlang = {
+				start = "%% " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "%% ",
+				end_prefix = "%%",
+				close = (C.fold_marker_end or "END_METADATA"),
+			},
+			elixir = {
+				start = "#" .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "# ",
+				end_prefix = "#",
+				close = (C.fold_marker_end or "END_METADATA"),
+			},
+			clojure = {
+				start = ";; " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = ";; ",
+				end_prefix = ";;",
+				close = (C.fold_marker_end or "END_METADATA"),
+			},
+			haskell = {
+				start = "{- " .. (C.fold_marker_start or "BEGIN_METADATA"),
+				line_prefix = "",
+				end_prefix = "",
+				close = (C.fold_marker_end or "END_METADATA") .. " -}",
+			},
+		}
+
+		-- Get comment style for current language
+		local comment_style = comment_styles[C.default_language] or comment_styles["cpp"]
 
 		-- Add metadata comment with fold markers
 		f:write("\n")
-		f:write("/* " .. fold_start)
+		f:write(comment_style.start .. "\n")
 
-		-- Add problem metadata to comment
+		-- Add problem metadata to comment with appropriate prefix
 		if problem_data.title and problem_data.difficulty and problem_data.questionId then
-			f:write("\n" .. format.format_metadata(problem_data))
-			f:write("\n" .. format.format_difficulty(problem_data))
+			f:write(
+				comment_style.line_prefix
+					.. "Problem: LC#"
+					.. problem_data.questionId
+					.. " "
+					.. problem_data.title
+					.. "\n"
+			)
+			f:write(comment_style.line_prefix .. "Difficulty: " .. problem_data.difficulty .. "\n")
 		end
 
 		-- Add LeetCode tags to comment
 		if problem_data.topicTags then
-			f:write("\n" .. format.format_tags(problem_data.topicTags))
+			local tag_names = {}
+			for _, tag in ipairs(problem_data.topicTags) do
+				table.insert(tag_names, tag.name)
+			end
+			f:write(comment_style.line_prefix .. "LC Tags: " .. table.concat(tag_names, ", ") .. "\n")
 		end
 
 		-- Add user tags section to comment
-		f:write("\n" .. format.create_user_tags_section())
+		f:write(comment_style.line_prefix .. "User Tags:\n")
 
-		f:write("\n" .. fold_end .. " */")
+		-- End the comment block
+		f:write(comment_style.end_prefix .. comment_style.close)
 
 		f:close()
 	end
