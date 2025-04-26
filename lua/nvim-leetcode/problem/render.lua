@@ -95,7 +95,7 @@ function M.open_description_buffer(problem_data, num, title, slug)
   local group = "LeetCodeImages_" .. buf
   vim.api.nvim_create_augroup(group, { clear = true })
 
-  vim.api.nvim_create_autocmd({ "WinEnter" }, {
+  vim.api.nvim_create_autocmd({ "BufWinEnter" }, {
     group = group,
     buffer = buf,
     callback = function()
@@ -103,6 +103,12 @@ function M.open_description_buffer(problem_data, num, title, slug)
       -- Only re-render if not already rendered in this session
       if #rendered > 0 then
         vim.defer_fn(function()
+        -- clear any cached images for this buffer so they re-render
+        for key,_ in pairs(_G.leetcode_image_cache or {}) do
+          if key:match("^" .. buf .. "%-") then
+            _G.leetcode_image_cache[key] = nil
+          end
+        end
           for _, entry in ipairs(rendered) do
             if entry.url and _G.leetcode_rendered_images[buffer_key] then
               -- Check if we need to re-render
@@ -127,6 +133,12 @@ function M.open_solution_buffer(fpath)
   vim.api.nvim_buf_set_option(buf, "filetype", C.default_language)
   vim.cmd("setlocal foldmethod=marker")
   vim.defer_fn(function()
+        -- clear any cached images for this buffer so they re-render
+        for key,_ in pairs(_G.leetcode_image_cache or {}) do
+          if key:match("^" .. buf .. "%-") then
+            _G.leetcode_image_cache[key] = nil
+          end
+        end
     vim.cmd("normal! zM")
   end, 100)
   return buf
