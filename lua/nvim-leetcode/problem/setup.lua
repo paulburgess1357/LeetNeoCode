@@ -52,21 +52,58 @@ end
 function M.setup_dependencies(prob_dir)
   local dep_dir = M.find_dependencies_dir()
 
-  for _, fname in ipairs({
-    "lc_includes.h",
-    ".clangd",
-    ".clang-format",
-    ".clang-tidy",
-  }) do
-    local src = dep_dir .. "/" .. fname
-    local dst = prob_dir .. "/" .. fname
+  local language = C.default_language or "cpp"
 
-    -- Check if source file exists
-    if vim.fn.filereadable(src) == 1 then
-      -- Remove existing file if it exists
-      if vim.fn.filereadable(dst) == 1 then
-        vim.fn.delete(dst)
-      end
+  -- Map file extensions to their language
+  local language_map = {
+    ["cpp"] = "cpp",
+    ["java"] = "java",
+    ["py"] = "python",
+    ["js"] = "javascript",
+    ["go"] = "go",
+    ["rs"] = "rust",
+    ["swift"] = "swift",
+    ["cs"] = "csharp"
+  }
+
+  -- Language-specific dependency files
+  local dependencies = {
+    cpp = {
+      { src = "lc_includes.h", dst = "lc_includes.h" },
+      { src = ".clangd", dst = ".clangd" },
+      { src = ".clang-format", dst = ".clang-format" },
+      { src = ".clang-tidy", dst = ".clang-tidy" }
+    },
+    python = {
+      { src = "lc_includes.py", dst = "lc_includes.py" }
+    },
+    java = {
+      { src = "LCIncludes.java", dst = "LCIncludes.java" }
+    },
+    javascript = {
+      { src = "lc_includes.js", dst = "lc_includes.js" }
+    },
+    go = {
+      { src = "lc_includes.go", dst = "lc_includes.go" }
+    },
+    rust = {
+      { src = "lc_includes.rs", dst = "lc_includes.rs" }
+    },
+    swift = {
+      { src = "LCIncludes.swift", dst = "LCIncludes.swift" }
+    },
+    csharp = {
+      { src = "LCIncludes.cs", dst = "LCIncludes.cs" }
+    }
+  }
+
+  -- Get language from file extension
+  local lang = language_map[language] or "cpp"
+  local deps = dependencies[lang] or dependencies["cpp"]
+
+  for _, dep in ipairs(deps) do
+    local src = dep_dir .. "/" .. dep.src
+    local dst = prob_dir .. "/" .. dep.dst
 
       -- Create an absolute symlink using direct shell command
       local cmd = string.format("ln -sf '%s' '%s'", src, dst)
@@ -143,7 +180,35 @@ function M.save_solution_file(prob_dir, snippets, problem_data)
   local f = io.open(fpath, "w")
   if f then
     -- Write the solution template first
-    f:write('#include "lc_includes.h"\n\n')
+    -- Language-specific headers
+    local headers = {
+      cpp = '#include "lc_includes.h"\n\n',
+      python = 'from lc_includes import *\n\n',
+      java = 'import java.util.*;\n\n',
+      javascript = '// No special imports needed for JavaScript\n\n',
+      go = 'package main\n\nimport (\n\t"fmt"\n)\n\n',
+      rust = 'mod lc_includes;\nuse lc_includes::*;\n\n',
+      swift = 'import Foundation\n\n',
+      csharp = 'using System;\nusing System.Collections.Generic;\n\n'
+    }
+
+    -- Map file extensions to their language
+    local language_map = {
+      ["cpp"] = "cpp",
+      ["java"] = "java",
+      ["py"] = "python",
+      ["js"] = "javascript",
+      ["go"] = "go",
+      ["rs"] = "rust",
+      ["swift"] = "swift",
+      ["cs"] = "csharp"
+    }
+
+    local lang = language_map[C.default_language] or "cpp"
+    local header = headers[lang] or ""
+
+    -- Write the language-specific header
+    f:write(header)
     f:write(snippets)
     f:write("\n\n")
 
