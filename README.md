@@ -2,6 +2,8 @@
 
 _A distraction‑free way to fetch, read and solve LeetCode problems **inside Neovim**._
 
+![Leetcode Example](screenshots/screenshot1.png)
+
 > **Note** – This plugin **does not compile or run your code** against LeetCode's judge.
 > If you need in‑editor execution and submission, check out
 > [`kawre/leetcode.nvim`](https://github.com/kawre/leetcode.nvim).
@@ -10,8 +12,7 @@ _A distraction‑free way to fetch, read and solve LeetCode problems **inside Ne
 
 ## Features
 
-- Pull the entire public LeetCode problem set into a local JSON cache
-- Open a problem description side‑by‑side with starter code – **one command, one tab**
+- Open a problem description side‑by‑side with starter code
 - Highlighted, nicely wrapped markdown with optional inline images<sup>†</sup>
 - Per‑problem solution folder with automatic versioning (`Solution_1.cpp`, `Solution_2.cpp`, …)
 - Metadata comment (difficulty, tags, your own tags) folded at the bottom of every file
