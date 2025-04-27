@@ -166,7 +166,7 @@ return {
     -------------------------------------------------------------------------
     -- Color palette
     -------------------------------------------------------------------------
-    colors = {                     -- change any of these to suit your colorscheme
+    colors = {                -- change any of these to suit your colorscheme
       problem_title           = "#ff7a6c",
       problem_section         = "#d8a657",
       problem_constraints     = "#89b482",
