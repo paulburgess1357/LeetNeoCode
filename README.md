@@ -45,6 +45,8 @@ For inline images in problem descriptions, you'll need:
    - **[LuaRocks](https://luarocks.org/)** – `sudo apt install luarocks`
    - **[magick](https://github.com/leafo/magick)** Lua rock – `luarocks --local --lua-version=5.1 install magick`
 
+Image support is optional. If your terminal does not support images or you don't want them, a text placeholder will be used instead.
+
 ### Automated Setup (Optional)
 
 The plugin includes scripts to automate dependency installation. These helper scripts will guide you through installing all necessary components for image support:
@@ -286,4 +288,5 @@ The plugin supports all LeetCode-offered languages with:
 ---
 
 ## Contributions
-Contributions welcome :) 
+
+Contributions welcome :)
