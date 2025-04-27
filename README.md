@@ -2,7 +2,7 @@
 
 _A distraction‑free way to fetch, read and solve LeetCode problems **inside Neovim**._
 
-> **Note** – This plugin **does not compile or run your code** against LeetCode’s judge.
+> **Note** – This plugin **does not compile or run your code** against LeetCode's judge.
 > If you need in‑editor execution and submission, check out
 > [`kawre/leetcode.nvim`](https://github.com/kawre/leetcode.nvim).
 
@@ -13,10 +13,52 @@ _A distraction‑free way to fetch, read and solve LeetCode problems **inside Ne
 - Pull the entire public LeetCode problem set into a local JSON cache
 - Open a problem description side‑by‑side with starter code – **one command, one tab**
 - Highlighted, nicely wrapped markdown with optional inline images<sup>†</sup>
-- Per‑problem solution folder with automatic versioning (`Solution_1.cpp`, `Solution_2.cpp`, …)
+- Per‑problem solution folder with automatic versioning (`Solution_1.cpp`, `Solution_2.cpp`, …)
 - Metadata comment (difficulty, tags, your own tags) folded at the bottom of every file
 
-<sup>†</sup> Images render only if you use a _Kitty‑protocol_ terminal and have [`image.nvim`](https://github.com/3rd/image.nvim) installed; otherwise we show lightweight placeholders.
+<sup>†</sup> Images render only if you use a _Kitty‑protocol_ terminal and have [`image.nvim`](https://github.com/3rd/image.nvim) installed; otherwise we show lightweight placeholders.
+
+---
+
+## Dependencies
+
+### Required
+
+- **Neovim ≥ 0.11** – [neovim.io](https://neovim.io)
+- **curl** in your `$PATH` – Usually pre-installed on most systems
+
+### Image Support (optional)
+
+For inline images in problem descriptions, you'll need:
+
+1. **[image.nvim](https://github.com/3rd/image.nvim)** – Neovim plugin for displaying images
+2. **A terminal with [Kitty graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/) support:**
+   - [Kitty](https://sw.kovidgoyal.net/kitty/) (recommended)
+   - [WezTerm](https://wezfurlong.org/wezterm/)
+   - [iTerm2](https://iterm2.com/) (macOS only)
+3. **Backend dependencies:**
+   - **[ImageMagick](https://imagemagick.org/)** + dev library – `sudo apt install imagemagick libmagickwand-dev`
+   - **[LuaRocks](https://luarocks.org/)** – `sudo apt install luarocks`
+   - **[magick](https://github.com/leafo/magick)** Lua rock – `luarocks --local --lua-version=5.1 install magick`
+
+### Automated Setup (Optional)
+
+The plugin includes scripts to automate dependency installation. These helper scripts will guide you through installing all necessary components for image support:
+
+```bash
+# From your plugin directory:
+cd installation
+bash install_image_support.sh
+```
+
+This interactive installer will:
+
+- Check for and optionally install Kitty terminal
+- Offer to install a basic Kitty configuration
+- Install ImageMagick, libmagickwand-dev, LuaRocks, and the magick Lua rock
+- Configure your shell environment with the necessary LuaRocks paths
+
+If you prefer to install dependencies manually, you can use the individual commands listed in the Image Support section above.
 
 ---
 
@@ -27,6 +69,10 @@ _A distraction‑free way to fetch, read and solve LeetCode problems **inside Ne
 ```lua
 {
   "paulburgess1357/nvim-leetcode",
+  dependencies = {
+    -- Optional: only needed if you want inline images
+    { "3rd/image.nvim", optional = true },
+  },
   config = function()
     require("nvim-leetcode").setup()
   end,
@@ -38,6 +84,10 @@ _A distraction‑free way to fetch, read and solve LeetCode problems **inside Ne
 ```lua
 use({
   "paulburgess1357/nvim-leetcode",
+  requires = {
+    -- Optional: only needed if you want inline images
+    { "3rd/image.nvim", opt = true },
+  },
   config = function()
     require("nvim-leetcode").setup()
   end,
@@ -134,10 +184,10 @@ require("nvim-leetcode").setup({
 | Value          | Language        | File extension |
 | -------------- | --------------- | -------------- |
 | `"cpp"`        | C++17/20/23     | `.cpp`         |
-| `"python"`     | Python 3        | `.py`          |
-| `"java"`       | Java 17         | `.java`        |
-| `"javascript"` | ECMAScript 2021 | `.js`          |
-| `"go"`         | Go 1.20         | `.go`          |
+| `"python"`     | Python 3        | `.py`          |
+| `"java"`       | Java 17         | `.java`        |
+| `"javascript"` | ECMAScript 2021 | `.js`          |
+| `"go"`         | Go 1.20         | `.go`          |
 | …and more      |                 |                |
 
 ---
@@ -147,14 +197,14 @@ require("nvim-leetcode").setup({
 | Command        | Action                                                     |
 | -------------- | ---------------------------------------------------------- |
 | `:LC Pull`     | (re‑)download the full problem list into the cache         |
-| `:LC <number>` | Open Problem – if the cache is stale it is refreshed first |
+| `:LC <number>` | Open Problem – if the cache is stale it is refreshed first |
 
 ### Typical workflow 📚 (no execution, just editing)
 
 1. `:LC Pull` – fetch metadata (run again occasionally to refresh)
-2. `:LC 1` – opens “**Two Sum**” in a new tab: left‑pane description, right‑pane `Solution_1.cpp`
+2. `:LC 1` – opens "**Two Sum**" in a new tab: left‑pane description, right‑pane `Solution_1.cpp`
 3. Solve the problem locally, build / test with your own tools
-4. Need another attempt? Run `:LC 1` again and you’ll get `Solution_2.cpp`
+4. Need another attempt? Run `:LC 1` again and you'll get `Solution_2.cpp`
 5. Grep or Telescope through `solutions/` when you want to revisit old work
 
 ---
@@ -177,22 +227,12 @@ _(Example for C++ – other languages get their own helper files.)_
 
 ---
 
-## Requirements
-
-- **Neovim ≥ 0.8**
-- `curl` in your `$PATH`
-- _(optional)_ [**image.nvim**](https://github.com/3rd/image.nvim) **+** a terminal that supports the [Kitty graphics protocol](https://sw.kovidgoyal.net/kitty/graphics‑protocol/) for inline images.
-
----
-
 ## License
 
-[The Unlicense](https://unlicense.org/) – public domain, no strings attached.
+[The Unlicense](https://unlicense.org/) – public domain, no strings attached.
 
 ---
 
 ## Screenshots
 
 _(coming soon)_
-
->
