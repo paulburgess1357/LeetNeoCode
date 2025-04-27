@@ -4,6 +4,7 @@ local C = require("nvim-leetcode.config")
 local cache = require("nvim-leetcode.problem.cache")
 local format = require("nvim-leetcode.format")
 local pull = require("nvim-leetcode.pull")
+local paths = require("nvim-leetcode.util.paths")
 
 local M = {}
 
@@ -24,67 +25,9 @@ function M.prepare_solution_dir(num, title, slug)
 	return prob_dir
 end
 
--- Find the dependencies directory
-function M.find_dependencies_dir()
-	-- Get the path of the current running file
-	local source_path = debug.getinfo(1, "S").source:sub(2)
-
-	-- Move up to the plugin root (may need adjustment based on your file structure)
-	local plugin_root = vim.fn.fnamemodify(source_path, ":h:h:h")
-
-	-- Check for dependencies in the standard location within your plugin
-	local dep_path = plugin_root .. "/lua/nvim-leetcode/dependencies"
-	if vim.fn.isdirectory(dep_path) == 1 then
-		return dep_path
-	end
-
-	-- If not found in the standard location, try the plugin root
-	dep_path = plugin_root .. "/dependencies"
-	if vim.fn.isdirectory(dep_path) == 1 then
-		return dep_path
-	end
-
-	-- Fallback to common plugin manager paths
-	local data_path = vim.fn.stdpath("data")
-	local package_paths = {
-		data_path .. "/lazy/nvim-leetcode/lua/nvim-leetcode/dependencies",
-		data_path .. "/lazy/nvim-leetcode/dependencies",
-		data_path .. "/site/pack/packer/start/nvim-leetcode/lua/nvim-leetcode/dependencies",
-		data_path .. "/site/pack/packer/start/nvim-leetcode/dependencies",
-	}
-
-	for _, path in ipairs(package_paths) do
-		if vim.fn.isdirectory(path) == 1 then
-			return path
-		end
-	end
-
-	-- Include your original fallback paths
-	local original_fallbacks = {
-		-- Check LazyVim path first
-		vim.fn.expand("~/.local/share/nvim/lazy/nvim-leetcode/lua/nvim-leetcode/dependencies"),
-		-- Check Packer path
-		vim.fn.expand("~/.local/share/nvim/site/pack/packer/start/nvim-leetcode/lua/nvim-leetcode/dependencies"),
-		-- Check local repo path
-		vim.fn.expand("~/Repos/nvim-leetcode/lua/nvim-leetcode/dependencies"),
-	}
-
-	for _, path in ipairs(original_fallbacks) do
-		if vim.fn.isdirectory(path) == 1 then
-			return path
-		end
-	end
-
-	-- Last resort - use a config-provided path
-	local final_fallback = C.get_dependencies_dir()
-
-	vim.notify("Could not find dependencies directory. Symlinks may not work.", vim.log.levels.WARN)
-	return final_fallback
-end
-
 -- Setup dependencies (symlinks or copies)
 function M.setup_dependencies(prob_dir)
-	local dep_dir = M.find_dependencies_dir()
+	local dep_dir = paths.find_dependencies_dir()
 
 	local language = C.default_language
 
