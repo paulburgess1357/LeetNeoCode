@@ -286,6 +286,4 @@ The plugin supports all LeetCode-offered languages with:
 ---
 
 ## Contributions
-Contributions are welcome :) 
-
-_(coming soon)_
+Contributions welcome :) 
