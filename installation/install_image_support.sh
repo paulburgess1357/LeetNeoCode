@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # -----------------------------------------------------------
-# Optional image-support bootstrap for nvim-leetcode
+# Optional image-support bootstrap for LeetNeoCode
 #   • Kitty terminal (optional)
 #   • repo’s kitty.conf (optional, offered only if Kitty exists)
 #   • ImageMagick + LuaRocks + magick rock (optional prompt)
@@ -9,7 +9,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/utils/colors.sh"
 
-section "nvim-leetcode  –  image support"
+section "LeetNeoCode  –  image support"
 
 echo "This step can set up:"
 echo "  • Kitty terminal (for inline images)            – optional"

@@ -1,4 +1,4 @@
-# nvim‑leetcode
+# LeetNeoCode
 
 _A distraction‑free way to fetch, read and solve LeetCode problems **inside Neovim**._
 
@@ -74,13 +74,13 @@ If you prefer to install dependencies manually, you can use the individual comma
 
 ```lua
 {
-  "paulburgess1357/nvim-leetcode",
+  "paulburgess1357/LeetNeoCode",
   dependencies = {
     -- Optional: only needed if you want inline images
     { "3rd/image.nvim", optional = true },
   },
   config = function()
-    require("nvim-leetcode").setup()
+    require("LeetNeoCode").setup()
   end,
 }
 ```
@@ -89,13 +89,13 @@ If you prefer to install dependencies manually, you can use the individual comma
 
 ```lua
 use({
-  "paulburgess1357/nvim-leetcode",
+  "paulburgess1357/LeetNeoCode",
   requires = {
     -- Optional: only needed if you want inline images
     { "3rd/image.nvim", opt = true },
   },
   config = function()
-    require("nvim-leetcode").setup()
+    require("LeetNeoCode").setup()
   end,
 })
 ```
@@ -109,7 +109,7 @@ All options (with defaults) – copy the block and tweak what you need:
 ```lua
 
 return {
-  "paulburgess1357/nvim-leetcode",
+  "paulburgess1357/LeetNeoCode",
   enabled = true,
   branch = "master",
 
@@ -128,7 +128,7 @@ return {
     default_language = "cpp", -- valid values: cpp, python, java, javascript, go, rust, swift, csharp
 
     -- Storage paths ----------------------------------------------------------
-    cache_dir = vim.fn.stdpath("cache") .. "/nvim-leetcode",
+    cache_dir = vim.fn.stdpath("cache") .. "/LeetNeoCode",
     cache_subdir = "meta",
     cache_file = "leetcode_cache.json",
     cache_expiry_days = 14,
@@ -245,9 +245,9 @@ return {
     end
 
     -----------------------------------------------------------------------
-    -- initialize nvim-leetcode with all options
+    -- initialize LeetNeoCode with all options
     -----------------------------------------------------------------------
-    require("nvim-leetcode").setup(opts)
+    require("LeetNeoCode").setup(opts)
   end,
 }
 ```
@@ -289,7 +289,7 @@ return {
 ## File Layout
 
 ```
-~/.cache/nvim-leetcode/
+~/.cache/LeetNeoCode/
 ├── meta/
 │   └── leetcode_cache.json
 └── solutions/
