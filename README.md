@@ -51,7 +51,7 @@ The plugin includes scripts to automate dependency installation. These helper sc
 ```bash
 # From your plugin directory:
 cd installation
-bash install_image_support.sh
+./install_image_support.sh
 ```
 
 This interactive installer will:
