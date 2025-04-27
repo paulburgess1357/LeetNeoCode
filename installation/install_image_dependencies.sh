@@ -11,63 +11,69 @@
 source "utils/colors.sh"
 section "Installing image.nvim dependencies"
 
-# ── helper to prompt/apt-install if package missing ───────────────
-apt_ensure() { # $1 = package name
-  dpkg -s "$1" &>/dev/null && {
-    info "$1 already installed."
-    return
-  }
-  read -rp "Install $1? (y/N): " yn
-  [[ ${yn,,} == y* ]] || error "$1 is required to continue."
-  progress "Installing $1 …"
-  sudo apt install -y "$1" || error "Failed to install $1."
-  hash -r # refresh shell hash so new cmd is visible
-  success "$1 installed."
-}
-
 # ── 1) ImageMagick & dev lib ──────────────────────────────────────
-command -v convert &>/dev/null || warning "ImageMagick (convert) not found."
-apt_ensure imagemagick
-apt_ensure libmagickwand-dev
+if ! command -v convert &>/dev/null; then
+  warning "ImageMagick (convert) not found."
+  read -rp "Install imagemagick? (y/N): " yn
+  if [[ ${yn,,} == y* ]]; then
+    progress "Installing imagemagick …"
+    sudo apt install -y imagemagick || error "Failed to install imagemagick."
+    success "imagemagick installed."
+  else
+    error "imagemagick is required to continue."
+  fi
+else
+  info "imagemagick already installed."
+fi
+
+# Check if libmagickwand-dev is installed
+if ! dpkg -s libmagickwand-dev &>/dev/null; then
+  warning "libmagickwand-dev not found."
+  read -rp "Install libmagickwand-dev? (y/N): " yn
+  if [[ ${yn,,} == y* ]]; then
+    progress "Installing libmagickwand-dev …"
+    sudo apt install -y libmagickwand-dev || error "Failed to install libmagickwand-dev."
+    success "libmagickwand-dev installed."
+  else
+    error "libmagickwand-dev is required to continue."
+  fi
+else
+  info "libmagickwand-dev already installed."
+fi
 
 # ── 2) LuaRocks ───────────────────────────────────────────────────
-luarocks_installed=false
-if command -v luarocks &>/dev/null; then
-  info "LuaRocks already installed: $(luarocks --version | head -1)"
-  luarocks_installed=true
-else
-  warning "LuaRocks not detected."
-  apt_ensure luarocks
+if ! command -v luarocks &>/dev/null; then
+  warning "LuaRocks not found."
+  read -rp "Install luarocks? (y/N): " yn
+  if [[ ${yn,,} == y* ]]; then
+    progress "Installing luarocks …"
+    sudo apt install -y luarocks || error "Failed to install luarocks."
 
-  # Update PATH temporarily so luarocks becomes available in this script
-  export PATH="$HOME/.luarocks/bin:$PATH"
-  hash -r # refresh shell hash so new commands are visible
-
-  # Verify luarocks is now resolvable
-  if command -v luarocks &>/dev/null; then
-    luarocks_installed=true
-    success "LuaRocks is now available: $(luarocks --version | head -1)"
-  else
-    # Try to find luarocks binary
-    LUAROCKS_PATH=$(find /usr -name luarocks 2>/dev/null | head -1)
-    if [[ -n "$LUAROCKS_PATH" ]]; then
-      export PATH="$(dirname "$LUAROCKS_PATH"):$PATH"
-      hash -r
-      if command -v luarocks &>/dev/null; then
-        luarocks_installed=true
-        success "Found LuaRocks at: $LUAROCKS_PATH"
-        success "LuaRocks is now available: $(luarocks --version | head -1)"
+    # Source possible locations of luarocks to make it available immediately
+    # Try to locate the luarocks executable
+    for possible_path in "/usr/bin/luarocks" "/usr/local/bin/luarocks" "$HOME/.luarocks/bin/luarocks"; do
+      if [[ -x "$possible_path" ]]; then
+        export PATH="$(dirname "$possible_path"):$PATH"
+        break
       fi
-    fi
-  fi
+    done
 
-  if ! $luarocks_installed; then
-    error "luarocks command still not found after installation. You may need to restart your terminal."
+    # Verify luarocks is now available
+    if command -v luarocks &>/dev/null; then
+      success "luarocks installed and available: $(luarocks --version | head -1)"
+    else
+      warning "luarocks installed but not in PATH. You'll need to restart your terminal."
+      warning "Installation will continue but you may need to run this script again after restarting your terminal."
+    fi
+  else
+    error "luarocks is required to continue."
   fi
+else
+  info "luarocks already installed: $(luarocks --version | head -1)"
 fi
 
 # ── 3) magick Lua rock (skip if present) ──────────────────────────
-if $luarocks_installed; then
+if command -v luarocks &>/dev/null; then
   if luarocks --lua-version=5.1 show magick >/dev/null 2>&1; then
     info "magick rock already installed."
     read -rp "Reinstall/upgrade magick rock? (y/N): " up
@@ -81,13 +87,27 @@ if $luarocks_installed; then
     success "magick rock installed."
   fi
 else
-  warning "Skipping magick rock installation since LuaRocks is not available."
+  warning "Skipping magick rock installation because luarocks is not available yet."
+  warning "You'll need to restart your terminal and run this script again to install magick rock."
 fi
 
 # ── 4) cURL ───────────────────────────────────────────────────────
-command -v curl &>/dev/null || apt_ensure curl
+if ! command -v curl &>/dev/null; then
+  warning "cURL not found."
+  read -rp "Install curl? (y/N): " yn
+  if [[ ${yn,,} == y* ]]; then
+    progress "Installing curl …"
+    sudo apt install -y curl || error "Failed to install curl."
+    success "curl installed."
+  else
+    error "curl is required to continue."
+  fi
+else
+  info "curl already installed."
+fi
 
 # ── 5) add LuaRocks paths to shell rc (once) ──────────────────────
+added_path=false
 for profile in "$HOME/.bashrc" "$HOME/.zshrc"; do
   [[ -f $profile ]] || continue
   if ! grep -q '# LuaRocks paths for image.nvim' "$profile"; then
@@ -97,6 +117,7 @@ for profile in "$HOME/.bashrc" "$HOME/.zshrc"; do
       echo 'eval "$(luarocks path --lua-version=5.1)"'
     } >>"$profile"
     success "LuaRocks paths added to $profile"
+    added_path=true
   else
     info "LuaRocks paths already in $profile"
   fi
@@ -106,22 +127,31 @@ done
 echo
 echo "Summary:"
 echo "  ✓ ImageMagick : $(convert --version | head -1)"
-echo "  $(if $luarocks_installed; then echo "✓"; else echo "✗"; fi) LuaRocks    : $(command -v luarocks &>/dev/null && luarocks --version | head -1 || echo "Not found in current PATH")"
+echo "  $(command -v luarocks &>/dev/null && echo "✓" || echo "✗") LuaRocks    : $(command -v luarocks &>/dev/null && luarocks --version | head -1 || echo "Not available in current PATH")"
 echo "  ✓ cURL        : $(curl --version | head -1 | cut -d' ' -f1-3)"
 
-if $luarocks_installed; then
-  echo "  $(luarocks --lua-version=5.1 list | grep -q '^magick' && echo "✓" || echo "✗") magick rock : $(luarocks --lua-version=5.1 list | grep -m1 '^magick' || echo "Not installed")"
+magick_installed=false
+if command -v luarocks &>/dev/null; then
+  if luarocks --lua-version=5.1 list | grep -q '^magick'; then
+    echo "  ✓ magick rock : $(luarocks --lua-version=5.1 list | grep -m1 '^magick')"
+    magick_installed=true
+  else
+    echo "  ✗ magick rock : Not installed"
+  fi
 else
-  echo "  ✗ magick rock : Cannot check (LuaRocks not available)"
+  echo "  ✗ magick rock : Cannot check (LuaRocks not available in current PATH)"
 fi
 
-if $luarocks_installed; then
-  success "image.nvim dependency check complete."
+if command -v luarocks &>/dev/null && $magick_installed; then
+  success "image.nvim dependency check complete. All dependencies installed!"
 else
-  warning "image.nvim dependency check incomplete - LuaRocks not found."
-  echo -e "\nIMPORTANT: You need to restart your terminal or run:"
-  echo -e "  source ~/.bashrc  (or ~/.zshrc if using zsh)"
-  echo -e "Then run this script again to complete the installation."
+  if $added_path; then
+    warning "image.nvim dependency check incomplete."
+    echo -e "\nIMPORTANT: You need to restart your terminal or run:"
+    echo -e "  source ~/.bashrc  (or ~/.zshrc if using zsh)"
+    echo -e "Then run this script again to complete the installation."
+  else
+    warning "image.nvim dependency check incomplete. Some dependencies are missing."
+    echo -e "\nPlease restart your terminal and run this script again."
+  fi
 fi
-
-echo "Restart your terminal (or source your shell rc) before using :LC."
