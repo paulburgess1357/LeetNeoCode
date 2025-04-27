@@ -15,6 +15,9 @@ _A distraction‑free way to fetch, read and solve LeetCode problems **inside Ne
 - Highlighted, nicely wrapped markdown with optional inline images<sup>†</sup>
 - Per‑problem solution folder with automatic versioning (`Solution_1.cpp`, `Solution_2.cpp`, …)
 - Metadata comment (difficulty, tags, your own tags) folded at the bottom of every file
+- Support for multiple programming languages (C++, Python, Java, JavaScript, Go, and more)
+- Automatic code dependencies setup with appropriate language-specific helpers
+- Customizable UI with configurable colors, formatting, and display options
 
 <sup>†</sup> Images render only if you use a _Kitty‑protocol_ terminal and have [`image.nvim`](https://github.com/3rd/image.nvim) installed; otherwise we show lightweight placeholders.
 
@@ -188,6 +191,14 @@ require("nvim-leetcode").setup({
 | `"java"`       | Java 17         | `.java`        |
 | `"javascript"` | ECMAScript 2021 | `.js`          |
 | `"go"`         | Go 1.20         | `.go`          |
+| `"rust"`       | Rust            | `.rs`          |
+| `"swift"`      | Swift           | `.swift`       |
+| `"csharp"`     | C#              | `.cs`          |
+| `"ruby"`       | Ruby            | `.rb`          |
+| `"kotlin"`     | Kotlin          | `.kt`          |
+| `"php"`        | PHP             | `.php`         |
+| `"dart"`       | Dart            | `.dart`        |
+| `"scala"`      | Scala           | `.scala`       |
 | …and more      |                 |                |
 
 ---
@@ -224,6 +235,46 @@ require("nvim-leetcode").setup({
 ```
 
 _(Example for C++ – other languages get their own helper files.)_
+
+---
+
+## Features in Detail
+
+### Syntax Highlighting
+
+The plugin provides custom syntax highlighting for:
+
+- Problem descriptions with color-coded sections
+- Example input/output blocks
+- Code snippets within problem descriptions
+- Tags and metadata in solution files
+
+### Auto-folding Metadata
+
+Solution files include problem metadata as comments that are:
+
+- Automatically folded when opening the file
+- Placed at the bottom of the file for minimal distraction
+- Contain problem number, title, difficulty, and LeetCode tags
+- Include a section for your own custom tags
+
+### Image Rendering
+
+If you've set up image support:
+
+- Problem diagrams and illustrations display directly in Neovim
+- Images automatically resize based on your window dimensions
+- Rendering is optimized for Kitty-protocol compatible terminals
+- Images re-render when switching back to the window
+
+### Multiple Languages
+
+The plugin supports all LeetCode-offered languages with:
+
+- Language-specific starter code templates
+- Appropriate file extensions and syntax highlighting
+- Language-specific include/import statements
+- Proper formatting configuration (.clang-format, .editorconfig, etc.)
 
 ---
 
