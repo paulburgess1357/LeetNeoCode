@@ -127,13 +127,13 @@ return {
     -------------------------------------------------------------------------
     default_language = "cpp", -- valid values: cpp, python, java, javascript, go, rust, swift, csharp
 
-	 -- Storage paths ----------------------------------------------------------
-	 cache_dir = vim.fn.stdpath("cache") .. "/nvim-leetcode",
-	 cache_subdir = "meta",
-	 cache_file = "leetcode_cache.json",
-	 cache_expiry_days = 14,
-	 solutions_subdir = "solutions",
-	 images_subdir = "images",
+    -- Storage paths ----------------------------------------------------------
+    cache_dir = vim.fn.stdpath("cache") .. "/nvim-leetcode",
+    cache_subdir = "meta",
+    cache_file = "leetcode_cache.json",
+    cache_expiry_days = 14,
+    solutions_subdir = "solutions",
+    images_subdir = "images",
 
     API_URL = "https://leetcode.com/api/problems/all/",
 
