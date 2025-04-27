@@ -9,11 +9,11 @@
 #   • cURL (used by the installer & image.nvim fallback fetcher)
 # ------------------------------------------------------------------
 
-source "utils/colors.sh" # colour + helper functions
+source "utils/colors.sh"
 
 section "Installing image.nvim dependencies"
 
-# ── helper to prompt/apt install if package missing ───────────────
+# ── helper to prompt/apt-install if package missing ───────────────
 apt_ensure() { # $1 = package name
   dpkg -s "$1" &>/dev/null && {
     info "$1 already installed."
@@ -23,25 +23,25 @@ apt_ensure() { # $1 = package name
   [[ ${yn,,} == y* ]] || error "$1 is required to continue."
   progress "Installing $1 …"
   sudo apt install -y "$1" || error "Failed to install $1."
+  hash -r # refresh shell hash so new cmd is visible
   success "$1 installed."
 }
 
 # ── 1) ImageMagick & dev lib ──────────────────────────────────────
-if ! command -v convert &>/dev/null; then
-  warning "ImageMagick (convert) not found."
-  apt_ensure imagemagick
-else
-  success "ImageMagick is already installed."
-fi
+command -v convert &>/dev/null || warning "ImageMagick (convert) not found."
+apt_ensure imagemagick
 apt_ensure libmagickwand-dev
 
 # ── 2) LuaRocks ───────────────────────────────────────────────────
-if ! command -v luarocks &>/dev/null; then
+command -v luarocks &>/dev/null || {
   warning "LuaRocks not detected."
   apt_ensure luarocks
-else
-  success "LuaRocks is already installed."
-fi
+}
+
+# verify luarocks is now resolvable
+command -v luarocks &>/dev/null || error "luarocks command still not found after installation."
+
+success "LuaRocks is available: $(luarocks --version | head -1)"
 
 # ── 3) magick Lua rock (skip if present) ──────────────────────────
 if luarocks --lua-version=5.1 show magick >/dev/null 2>&1; then
