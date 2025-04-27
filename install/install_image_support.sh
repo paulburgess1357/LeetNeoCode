@@ -3,7 +3,7 @@
 # Optional image-support bootstrap for nvim-leetcode
 #   • Kitty terminal (optional)
 #   • repo’s kitty.conf (optional, offered only if Kitty exists)
-#   • ImageMagick + LuaRocks + magick rock (always)
+#   • ImageMagick + LuaRocks + magick rock (optional prompt)
 # -----------------------------------------------------------
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -14,7 +14,7 @@ section "nvim-leetcode  –  image support"
 echo "This step can set up:"
 echo "  • Kitty terminal (for inline images)            – optional"
 echo "  • kitty.conf from this repo                     – optional"
-echo "  • ImageMagick, LuaRocks, magick Lua rock        – required for any image backend"
+echo "  • ImageMagick, LuaRocks, magick Lua rock        – optional (asked below)"
 echo
 
 read -rp "Run the image-support installer? (y/N): " yn
@@ -32,9 +32,10 @@ if ! command -v kitty &>/dev/null; then
   if [[ ${kitty_yn,,} == y* ]]; then
     progress "Installing Kitty…"
     sudo apt update && sudo apt install -y kitty &&
-      success "Kitty installed." || warning "Kitty install failed – continuing without Kitty."
+      success "Kitty installed." ||
+      warning "Kitty install failed – continuing without Kitty."
   else
-    info "Continuing without Kitty. Ensure your terminal supports inline images (WezTerm, iTerm2, etc.)."
+    info "Continuing without Kitty.  Make sure your terminal supports inline images (WezTerm, iTerm2…)."
   fi
 else
   success "Kitty already installed."
@@ -67,13 +68,17 @@ if command -v kitty &>/dev/null; then
 fi
 
 # ─────────────────────────────────────────────────────────────
-# 3) ImageMagick + LuaRocks + magick rock
+# 3) ImageMagick + LuaRocks + magick rock (optional prompt)
 # ─────────────────────────────────────────────────────────────
-IMG_SCRIPT="$SCRIPT_DIR/install_image_dependencies.sh"
-[[ -f $IMG_SCRIPT ]] || error "Missing $IMG_SCRIPT – copy it into install/ first."
-
-chmod +x "$IMG_SCRIPT"
-bash "$IMG_SCRIPT"
+read -rp "Run the system-dependency check (ImageMagick, LuaRocks, magick rock)? (Y/n): " dep_yn
+if [[ ${dep_yn,,} != n* ]]; then
+  IMG_SCRIPT="$SCRIPT_DIR/install_image_dependencies.sh"
+  [[ -f $IMG_SCRIPT ]] || error "Missing $IMG_SCRIPT – copy it into install/ first."
+  chmod +x "$IMG_SCRIPT"
+  bash "$IMG_SCRIPT"
+else
+  info "Skipping dependency script."
+fi
 
 section "Image support complete"
 success "Setup finished.  Restart your terminal and open Neovim – :LC will now show images if your terminal supports them."
