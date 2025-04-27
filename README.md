@@ -266,11 +266,6 @@ return {
 | `"rust"`       | Rust            | `.rs`          |
 | `"swift"`      | Swift           | `.swift`       |
 | `"csharp"`     | C#              | `.cs`          |
-| `"ruby"`       | Ruby            | `.rb`          |
-| `"kotlin"`     | Kotlin          | `.kt`          |
-| `"php"`        | PHP             | `.php`         |
-| `"dart"`       | Dart            | `.dart`        |
-| `"scala"`      | Scala           | `.scala`       |
 
 ---
 
