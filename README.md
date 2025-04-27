@@ -202,7 +202,6 @@ require("nvim-leetcode").setup({
 | `"php"`        | PHP             | `.php`         |
 | `"dart"`       | Dart            | `.dart`        |
 | `"scala"`      | Scala           | `.scala`       |
-| …and more      |                 |                |
 
 ---
 
