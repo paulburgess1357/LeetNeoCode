@@ -21,6 +21,7 @@ Checks: >
   -readability-implicit-bool-conversion
   -readability-braces-around-statements
   -misc-no-recursion
+  -readability-make-member-function-static
 
 HeaderFilterRegex: ".*"
 FormatStyle: file
