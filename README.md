@@ -225,10 +225,10 @@ return {
     code_block_style = "italic",
 
     ---------------------------------------------------------------------------
-   -- Misc
-   ---------------------------------------------------------------------------
-   custom_copy = true, -- When true, excludes includes and metadata when copying
-   custom_copy_color = "#34C759",
+    -- Misc
+    ---------------------------------------------------------------------------
+    custom_copy = true, -- When true, excludes includes and metadata when copying
+    custom_copy_color = "#34C759",
 
   config = function(_, opts)
     -----------------------------------------------------------------------
