@@ -1,6 +1,6 @@
 -- LeetCode code stub fetching module
 local vim = vim
-local C = require("LeetNeoCode.config")
+local C = require "LeetNeoCode.config"
 
 -- Internal: perform GraphQL request and return decoded table
 local function graphql_request(slug)
@@ -11,7 +11,7 @@ local function graphql_request(slug)
       }
     }
   ]]
-  local payload = vim.fn.json_encode({ query = query, variables = { titleSlug = slug } })
+  local payload = vim.fn.json_encode { query = query, variables = { titleSlug = slug } }
   local cmd = {
     "curl",
     "-s",

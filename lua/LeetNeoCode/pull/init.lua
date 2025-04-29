@@ -1,9 +1,9 @@
 -- Pull module (main interface for problem list fetching)
 local M = {}
 
-M.metadata = require("LeetNeoCode.pull.metadata")
-M.code = require("LeetNeoCode.pull.code")
-M.description = require("LeetNeoCode.pull.description")
+M.metadata = require "LeetNeoCode.pull.metadata"
+M.code = require "LeetNeoCode.pull.code"
+M.description = require "LeetNeoCode.pull.description"
 
 -- Main function to pull problem list
 function M.pull_problems()

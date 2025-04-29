@@ -1,5 +1,5 @@
 -- Main configuration module for LeetNeoCode
-local M = require("LeetNeoCode.config.options")
+local M = require "LeetNeoCode.config.options"
 
 -- Export the directory utilities
 M.get_dependencies_dir = require("LeetNeoCode.config.dirs").get_dependencies_dir

@@ -1,7 +1,7 @@
 -- Format module: LeetCode-specific patterns processing
 local M = {}
 
-local C = require("LeetNeoCode.config")
+local C = require "LeetNeoCode.config"
 
 -- Process LeetCode problem text patterns
 function M.process_patterns(text)
@@ -15,16 +15,17 @@ function M.process_patterns(text)
   local ex_s = string.rep("-", math.floor(w * example_sep_ratio))
 
   local out = "Description\n" .. main_s .. "\n\n"
-  local title = t:match("^%s*(.-)%s*\n")
+  local title = t:match "^%s*(.-)%s*\n"
   if title then
     out = out .. title .. "\n\n"
     t = t:gsub("^%s*.-\n", "", 1)
   end
   out = out .. t
 
-  out = out:gsub("Example (%d+):", function(n)
-    return "\nExample " .. n .. ":\n" .. ex_s
-  end)
+  out = out
+    :gsub("Example (%d+):", function(n)
+      return "\nExample " .. n .. ":\n" .. ex_s
+    end)
     :gsub("Input:", "Input:  ")
     :gsub("Output:", "Output: ")
     :gsub("Explanation:", "Explanation: ")

@@ -1,6 +1,6 @@
 -- Notification utilities for LeetNeoCode
 local M = {}
-local C = require("LeetNeoCode.config")
+local C = require "LeetNeoCode.config"
 
 -- Create a floating notification window
 function M.floating_notification(message, timeout)
@@ -24,7 +24,7 @@ function M.floating_notification(message, timeout)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, { message })
 
   -- Apply highlighting
-  local ns_id = vim.api.nvim_create_namespace("leetcode_notification")
+  local ns_id = vim.api.nvim_create_namespace "leetcode_notification"
   vim.api.nvim_buf_add_highlight(buf, ns_id, "MoreMsg", 0, 0, -1)
 
   -- Show the floating window

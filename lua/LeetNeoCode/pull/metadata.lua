@@ -1,6 +1,6 @@
 -- LeetCode problem list fetching module
 local vim = vim
-local C = require("LeetNeoCode.config")
+local C = require "LeetNeoCode.config"
 
 local M = {}
 
@@ -41,7 +41,7 @@ function M.pull_problems()
   local cache_file = get_cache_path()
 
   -- Synchronous fetch of the metadata JSON
-  local json_str = vim.fn.system({ "curl", "-s", C.API_URL })
+  local json_str = vim.fn.system { "curl", "-s", C.API_URL }
   if vim.v.shell_error ~= 0 or not json_str or #json_str == 0 then
     vim.notify("Failed to fetch LeetCode data (curl error)", vim.log.levels.ERROR)
     return

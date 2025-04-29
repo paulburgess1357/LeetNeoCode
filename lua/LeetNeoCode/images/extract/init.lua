@@ -8,7 +8,7 @@ function M.extract_image_urls(html_content)
   end
   local urls = {}
   -- Improved regex to better capture image tags
-  for url in html_content:gmatch('<img[^>]-src="([^"]-)"') do
+  for url in html_content:gmatch '<img[^>]-src="([^"]-)"' do
     if url:sub(1, 4) ~= "http" then
       url = "https://leetcode.com" .. url
     end

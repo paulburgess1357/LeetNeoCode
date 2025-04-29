@@ -1,10 +1,10 @@
 -- Format module: HTML tags processing
 local M = {}
 
-local entities = require("LeetNeoCode.format.entities")
-local superscript = require("LeetNeoCode.format.entities.superscript")
-local subscript = require("LeetNeoCode.format.entities.subscript")
-local C = require("LeetNeoCode.config")
+local entities = require "LeetNeoCode.format.entities"
+local superscript = require "LeetNeoCode.format.entities.superscript"
+local subscript = require "LeetNeoCode.format.entities.subscript"
+local C = require "LeetNeoCode.config"
 
 -- Extract and preserve code blocks to prevent modification
 function M.process_code_blocks(text)
@@ -62,7 +62,7 @@ function M.process_tags(text)
     end)
     :gsub("<ol>(.-)</ol>", function(c)
       local out, n = "\n", 1
-      for it in c:gmatch("<li>(.-)</li>") do
+      for it in c:gmatch "<li>(.-)</li>" do
         out = out .. n .. ". " .. it .. "\n"
         n = n + 1
       end

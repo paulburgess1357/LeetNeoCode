@@ -15,15 +15,15 @@ function M.find_dependencies_dir()
     plugin_root .. "/dependencies",
 
     -- Common plugin manager paths
-    vim.fn.stdpath("data") .. "/lazy/LeetNeoCode/lua/LeetNeoCode/dependencies",
-    vim.fn.stdpath("data") .. "/lazy/LeetNeoCode/dependencies",
-    vim.fn.stdpath("data") .. "/site/pack/packer/start/LeetNeoCode/lua/LeetNeoCode/dependencies",
-    vim.fn.stdpath("data") .. "/site/pack/packer/start/LeetNeoCode/dependencies",
+    vim.fn.stdpath "data" .. "/lazy/LeetNeoCode/lua/LeetNeoCode/dependencies",
+    vim.fn.stdpath "data" .. "/lazy/LeetNeoCode/dependencies",
+    vim.fn.stdpath "data" .. "/site/pack/packer/start/LeetNeoCode/lua/LeetNeoCode/dependencies",
+    vim.fn.stdpath "data" .. "/site/pack/packer/start/LeetNeoCode/dependencies",
 
     -- Original fallbacks
-    vim.fn.expand("~/.local/share/nvim/lazy/LeetNeoCode/lua/LeetNeoCode/dependencies"),
-    vim.fn.expand("~/.local/share/nvim/site/pack/packer/start/LeetNeoCode/lua/LeetNeoCode/dependencies"),
-    vim.fn.expand("~/Repos/LeetNeoCode/lua/LeetNeoCode/dependencies"),
+    vim.fn.expand "~/.local/share/nvim/lazy/LeetNeoCode/lua/LeetNeoCode/dependencies",
+    vim.fn.expand "~/.local/share/nvim/site/pack/packer/start/LeetNeoCode/lua/LeetNeoCode/dependencies",
+    vim.fn.expand "~/Repos/LeetNeoCode/lua/LeetNeoCode/dependencies",
   }
 
   -- Try each candidate

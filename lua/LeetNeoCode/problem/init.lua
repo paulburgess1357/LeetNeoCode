@@ -2,9 +2,9 @@
 local M = {}
 
 -- Import submodules
-M.cache = require("LeetNeoCode.problem.cache")
-M.setup = require("LeetNeoCode.problem.setup")
-M.render = require("LeetNeoCode.problem.render")
+M.cache = require "LeetNeoCode.problem.cache"
+M.setup = require "LeetNeoCode.problem.setup"
+M.render = require "LeetNeoCode.problem.render"
 
 -- Global state
 _G.leetcode_opened = _G.leetcode_opened or {}

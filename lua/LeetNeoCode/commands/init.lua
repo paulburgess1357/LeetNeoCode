@@ -1,6 +1,6 @@
 -- Command registration module for LeetNeoCode
 local M = {}
-local notify = require("LeetNeoCode.util.notify")
+local notify = require "LeetNeoCode.util.notify"
 
 -- Setup all commands
 function M.setup(leetcode)
@@ -20,7 +20,7 @@ function M.setup(leetcode)
   -- Register the LC command using the Lua API
   vim.api.nvim_create_user_command("LC", function(opts)
     -- Show notification
-    local win, buf = notify.command_notification("Running Leetcode Command...")
+    local win, buf = notify.command_notification "Running Leetcode Command..."
 
     -- Process the command
     vim.schedule(function()

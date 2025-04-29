@@ -1,9 +1,9 @@
 -- Main image handling module
 local M = {}
 
-local C = require("LeetNeoCode.config")
-local extract = require("LeetNeoCode.images.extract")
-local render = require("LeetNeoCode.images.render")
+local C = require "LeetNeoCode.config"
+local extract = require "LeetNeoCode.images.extract"
+local render = require "LeetNeoCode.images.render"
 
 -- Get image cache directory path for a specific problem
 function M.get_image_cache_dir(num, title, slug)

@@ -2,10 +2,10 @@
 local M = {}
 
 -- Import submodules
-local html_processor = require("LeetNeoCode.format.processor.html")
-local leetcode_processor = require("LeetNeoCode.format.processor.leetcode")
-local wrap_util = require("LeetNeoCode.format.wrap")
-local C = require("LeetNeoCode.config")
+local html_processor = require "LeetNeoCode.format.processor.html"
+local leetcode_processor = require "LeetNeoCode.format.processor.leetcode"
+local wrap_util = require "LeetNeoCode.format.wrap"
+local C = require "LeetNeoCode.config"
 
 -- Main function to format problem text
 function M.format_problem_text(html)

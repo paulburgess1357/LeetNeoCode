@@ -1,7 +1,7 @@
 -- Directory management functions for LeetNeoCode
 local M = {}
-local options = require("LeetNeoCode.config.options")
-local paths = require("LeetNeoCode.util.paths")
+local options = require "LeetNeoCode.config.options"
+local paths = require "LeetNeoCode.util.paths"
 
 -- Find dependencies directory (now using the centralized function)
 function M.get_dependencies_dir()

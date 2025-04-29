@@ -3,10 +3,10 @@ local M = {}
 
 -- Setup highlighting for the problem description
 function M.setup_description_highlighting()
-  local C = require("LeetNeoCode.config")
+  local C = require "LeetNeoCode.config"
   local colors = C.colors or {}
 
-  vim.cmd([[
+  vim.cmd [[
     syntax match ProblemTitle       /^Description$/
     syntax match ProblemSection     /^Constraints:$/
     syntax region ProblemConstraints start=/^Constraints:$/ end=/^\s*$/ keepend
@@ -24,15 +24,13 @@ function M.setup_description_highlighting()
 
     setlocal conceallevel=2 concealcursor=nc
     setlocal nowrap
-  ]])
+  ]]
 
   -- Set highlighting colors with fallbacks to defaults
   vim.cmd(string.format("highlight ProblemTitle guifg=%s gui=bold", colors.problem_title or "#ff7a6c"))
   vim.cmd(string.format("highlight ProblemSection guifg=%s gui=bold", colors.problem_section or "#d8a657"))
   vim.cmd(string.format("highlight ProblemConstraints guifg=%s", colors.problem_constraints or "#89b482"))
-  vim.cmd(
-    string.format("highlight ProblemConstraintNum guifg=%s gui=bold", colors.problem_constraint_num or "#d8a657")
-  )
+  vim.cmd(string.format("highlight ProblemConstraintNum guifg=%s gui=bold", colors.problem_constraint_num or "#d8a657"))
   vim.cmd(string.format("highlight ProblemFollowup guifg=%s gui=bold", colors.problem_followup or "#d8a657"))
   vim.cmd(string.format("highlight ProblemExample guifg=%s gui=bold", colors.problem_example or "#a9b665"))
   vim.cmd(string.format("highlight ProblemBullet guifg=%s", colors.problem_bullet or "#d3869b"))
@@ -47,10 +45,10 @@ end
 
 -- Setup highlighting for solution files
 function M.setup_solution_highlighting()
-  local C = require("LeetNeoCode.config")
+  local C = require "LeetNeoCode.config"
   local colors = C.colors or {}
 
-  vim.cmd([[
+  vim.cmd [[
     " Highlight groups for problem metadata and comments
     highlight default link LeetCodeMetadata Identifier
     highlight default link LeetCodeTag Keyword
@@ -61,7 +59,7 @@ function M.setup_solution_highlighting()
     syntax match LeetCodeDifficultyLine /^\* Difficulty:.*$/ contained
     syntax match LeetCodeTagsLine /^\* LC Tags:.*$/ contained
     syntax match LeetCodeUserTagsLine /^\* User Tags:.*$/ contained
-  ]])
+  ]]
 
   -- Set highlighting colors with fallbacks to defaults
   vim.cmd(string.format("highlight LeetCodeMetadataLine guifg=%s gui=bold", colors.metadata_line or "#d8a657"))
@@ -72,7 +70,7 @@ end
 
 -- Setup fold markers for solution files
 function M.setup_fold_settings()
-  local C = require("LeetNeoCode.config")
+  local C = require "LeetNeoCode.config"
   -- Use configured fold markers or fallbacks
   local fold_start = C.fold_marker_start or "▼"
   local fold_end = C.fold_marker_end or "▲"

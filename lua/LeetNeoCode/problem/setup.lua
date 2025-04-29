@@ -1,10 +1,10 @@
 -- Setup for problem directories and dependencies
 local vim = vim
-local C = require("LeetNeoCode.config")
-local cache = require("LeetNeoCode.problem.cache")
-local format = require("LeetNeoCode.format")
-local pull = require("LeetNeoCode.pull")
-local paths = require("LeetNeoCode.util.paths")
+local C = require "LeetNeoCode.config"
+local cache = require "LeetNeoCode.problem.cache"
+local format = require "LeetNeoCode.format"
+local pull = require "LeetNeoCode.pull"
+local paths = require "LeetNeoCode.util.paths"
 
 local M = {}
 
@@ -111,10 +111,7 @@ function M.setup_dependencies(prob_dir)
         local write_ok = pcall(vim.fn.writefile, content, dst)
 
         if not write_ok then
-          vim.notify(
-            "Failed to copy " .. dep.dst .. ". File dependencies may be missing.",
-            vim.log.levels.ERROR
-          )
+          vim.notify("Failed to copy " .. dep.dst .. ". File dependencies may be missing.", vim.log.levels.ERROR)
         else
           vim.notify("Copied " .. dep.dst .. " instead of symlink", vim.log.levels.INFO)
         end
@@ -159,7 +156,7 @@ function M.save_solution_file(prob_dir, snippets, problem_data)
   local max_index = 0
   for _, path in ipairs(vim.fn.globpath(prob_dir, "Solution_*.*", false, true)) do
     local name = vim.fn.fnamemodify(path, ":t")
-    local idx = tonumber(name:match("^Solution_(%d+)")) or 0
+    local idx = tonumber(name:match "^Solution_(%d+)") or 0
     if idx > max_index then
       max_index = idx
     end
@@ -230,7 +227,7 @@ function M.save_solution_file(prob_dir, snippets, problem_data)
     -- Write the language-specific header
     f:write(header)
     f:write(snippets)
-    f:write("\n\n")
+    f:write "\n\n"
 
     -- Comment style based on language
     local comment_styles = {
@@ -354,18 +351,13 @@ function M.save_solution_file(prob_dir, snippets, problem_data)
     local comment_style = comment_styles[C.default_language]
 
     -- Add metadata comment with fold markers
-    f:write("\n")
+    f:write "\n"
     f:write(comment_style.start .. "\n")
 
     -- Add problem metadata to comment with appropriate prefix
     if problem_data.title and problem_data.difficulty and problem_data.questionId then
       f:write(
-        comment_style.line_prefix
-          .. "Problem: LC#"
-          .. problem_data.questionId
-          .. " "
-          .. problem_data.title
-          .. "\n"
+        comment_style.line_prefix .. "Problem: LC#" .. problem_data.questionId .. " " .. problem_data.title .. "\n"
       )
       f:write(comment_style.line_prefix .. "Difficulty: " .. problem_data.difficulty .. "\n")
     end

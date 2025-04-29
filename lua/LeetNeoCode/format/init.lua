@@ -1,8 +1,8 @@
 -- Format module (main interface for formatting)
 local M = {}
 
-M.html = require("LeetNeoCode.format.html")
-M.syntax = require("LeetNeoCode.format.syntax")
+M.html = require "LeetNeoCode.format.html"
+M.syntax = require "LeetNeoCode.format.syntax"
 
 -- Format problem text
 function M.format_problem_text(html)

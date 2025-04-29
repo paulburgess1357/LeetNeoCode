@@ -1,7 +1,7 @@
 -- Problem cache handling
 local vim = vim
-local C = require("LeetNeoCode.config")
-local pull = require("LeetNeoCode.pull")
+local C = require "LeetNeoCode.config"
+local pull = require "LeetNeoCode.pull"
 
 local M = {}
 
@@ -31,7 +31,7 @@ function M.load_cache(path)
   if not f then
     return nil
   end
-  local raw = f:read("*a")
+  local raw = f:read "*a"
   f:close()
   local ok, data = pcall(vim.fn.json_decode, raw)
   return ok and data or nil
