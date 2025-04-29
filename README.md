@@ -223,7 +223,12 @@ return {
     code_block_end = "}",
     code_block_color = theme_config.leetcode.problem.code_block, -- Use the same code block color
     code_block_style = "italic",
-  },
+
+    ---------------------------------------------------------------------------
+   -- Misc
+   ---------------------------------------------------------------------------
+   custom_copy = true, -- When true, excludes includes and metadata when copying
+   custom_copy_color = "#34C759",
 
   config = function(_, opts)
     -----------------------------------------------------------------------
