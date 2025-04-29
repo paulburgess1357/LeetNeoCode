@@ -2,6 +2,13 @@
 local M = {}
 local C = require("LeetNeoCode.config")
 
+-- highlight namespace and group for flash
+local HIGHLIGHT_NS = vim.api.nvim_create_namespace("LeetNeoCodeCopyFlash")
+local HIGHLIGHT_GROUP = "LeetNeoCodeCopyFlashGroup"
+
+-- define the highlight group based on config (custom_copy_color)
+vim.api.nvim_set_hl(0, HIGHLIGHT_GROUP, C.custom_copy_color and { bg = C.custom_copy_color } or {})
+
 -- Helper to emit OSC-52 over stdout
 local function set_clipboard(text)
 	local b64 = vim.fn.system({ "base64" }, text):gsub("\n", "")
@@ -73,6 +80,9 @@ function M.copy_region(s_line, s_col, e_line, e_col)
 	vim.fn.setreg("+", txt)
 	set_clipboard(txt)
 
+	-- flash highlight
+	M.flash_region(s_line, s_col, e_line, e_col)
+
 	vim.notify("🧩 LeetCode Smart Copy ✓", vim.log.levels.DEBUG, { timeout = 500 })
 	-- clear any leftover command
 	vim.api.nvim_feedkeys(":<C-u>", "nx", false)
@@ -87,11 +97,21 @@ end
 
 -- operatorfunc handler for normal-mode y{motion}
 function M.yank_operator(motion_type)
-	-- marks '[ and '] are set by the operator call
 	local start = vim.api.nvim_buf_get_mark(0, "[")
 	local finish = vim.api.nvim_buf_get_mark(0, "]")
-	-- adjust end_col for charwise?  seen off by one, but test and tweak if needed
 	M.copy_region(start[1], start[2], finish[1], finish[2])
+end
+
+-- flash highlight of yanked region
+function M.flash_region(s_line, s_col, e_line, e_col)
+	for ln = s_line - 1, e_line - 1 do
+		local start_col = (ln == s_line - 1) and s_col or 0
+		local end_col = (ln == e_line - 1) and (e_col + 1) or -1
+		vim.api.nvim_buf_add_highlight(0, HIGHLIGHT_NS, HIGHLIGHT_GROUP, ln, start_col, end_col)
+	end
+	vim.defer_fn(function()
+		vim.api.nvim_buf_clear_namespace(0, HIGHLIGHT_NS, 0, -1)
+	end, 200)
 end
 
 -- Setup: override “y” only in your problem buffers
@@ -109,7 +129,6 @@ function M.setup()
 		group = "LeetCodeCustomCopy",
 		pattern = pattern,
 		callback = function()
-			-- normal-mode “y” → operatorfunc + g@
 			vim.api.nvim_buf_set_keymap(
 				0,
 				"n",
@@ -117,7 +136,6 @@ function M.setup()
 				"<cmd>set operatorfunc=v:lua.require'LeetNeoCode.util.custom_copy'.yank_operator<CR>g@",
 				{ noremap = true, silent = true }
 			)
-			-- visual-mode “y” → direct copy
 			vim.api.nvim_buf_set_keymap(
 				0,
 				"x",
