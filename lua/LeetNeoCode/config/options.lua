@@ -106,7 +106,7 @@ local M = {
 	---------------------------------------------------------------------------
 	-- Misc
 	---------------------------------------------------------------------------
-	custom_copy = true, -- When true, excludes includes and metadata when copying
+	custom_copy = false, -- When true, excludes includes and metadata when copying
 	custom_copy_color = "#34C759",
 }
 
