@@ -1,52 +1,29 @@
 -- Format module (main interface for formatting)
 local M = {}
 
+-- Import submodules
+local formatter = require "LeetNeoCode.format.core.formatter"
+local metadata = require "LeetNeoCode.format.core.metadata"
+local highlight = require "LeetNeoCode.format.highlighting.setup"
+
+-- HTML formatting (public API)
 M.html = require "LeetNeoCode.format.html"
 M.syntax = require "LeetNeoCode.format.syntax"
 
 -- Format problem text
 function M.format_problem_text(html)
-  return M.html.format_problem_text(html)
+  return formatter.format_problem_text(html)
 end
 
 -- Setup syntax highlighting
 function M.setup_highlighting()
-  return M.html.setup_highlighting()
+  return highlight.setup_highlighting()
 end
 
--- Format problem metadata
-function M.format_metadata(metadata)
-  if not metadata or not metadata.title or not metadata.difficulty or not metadata.questionId then
-    return ""
-  end
-  return "* Problem: LC#" .. metadata.questionId .. " " .. metadata.title
-end
-
--- Format problem difficulty
-function M.format_difficulty(metadata)
-  if not metadata or not metadata.difficulty then
-    return ""
-  end
-  return "* Difficulty: " .. metadata.difficulty
-end
-
--- Format problem tags
-function M.format_tags(tags)
-  if not tags or #tags == 0 then
-    return "* LC Tags: None"
-  end
-
-  local tag_names = {}
-  for _, tag in ipairs(tags) do
-    table.insert(tag_names, tag.name)
-  end
-
-  return "* LC Tags: " .. table.concat(tag_names, ", ")
-end
-
--- Create user tags section
-function M.create_user_tags_section()
-  return "* User Tags:"
-end
+-- Metadata formatting functions
+M.format_metadata = metadata.format_metadata
+M.format_difficulty = metadata.format_difficulty
+M.format_tags = metadata.format_tags
+M.create_user_tags_section = metadata.create_user_tags_section
 
 return M

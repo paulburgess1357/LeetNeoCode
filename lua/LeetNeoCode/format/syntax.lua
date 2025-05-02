@@ -1,5 +1,6 @@
--- Syntax highlighting for problem view
+-- Syntax highlighting module for problem view
 local M = {}
+local highlight = require "LeetNeoCode.format.highlighting.setup"
 
 -- Setup highlighting for the problem description
 function M.setup_description_highlighting()
@@ -43,89 +44,10 @@ function M.setup_description_highlighting()
   vim.cmd(string.format("highlight ProblemVariable guifg=%s", colors.problem_variable or "#7daea3"))
 end
 
--- Setup highlighting for solution files
-function M.setup_solution_highlighting()
-  local C = require "LeetNeoCode.config"
-  local colors = C.colors or {}
+-- Setup highlighting for solution files (delegate to highlighting module)
+M.setup_solution_highlighting = highlight.setup_solution_highlighting
 
-  vim.cmd [[
-    " Highlight groups for problem metadata and comments
-    highlight default link LeetCodeMetadata Identifier
-    highlight default link LeetCodeTag Keyword
-    highlight default link LeetCodeUserTag String
-
-    " Syntax highlighting for metadata lines in the comment
-    syntax match LeetCodeMetadataLine /^\* Problem:.*$/ contained
-    syntax match LeetCodeDifficultyLine /^\* Difficulty:.*$/ contained
-    syntax match LeetCodeTagsLine /^\* LC Tags:.*$/ contained
-    syntax match LeetCodeUserTagsLine /^\* User Tags:.*$/ contained
-  ]]
-
-  -- Set highlighting colors with fallbacks to defaults
-  vim.cmd(string.format("highlight LeetCodeMetadataLine guifg=%s gui=bold", colors.metadata_line or "#d8a657"))
-  vim.cmd(string.format("highlight LeetCodeDifficultyLine guifg=%s gui=bold", colors.difficulty_line or "#a9b665"))
-  vim.cmd(string.format("highlight LeetCodeTagsLine guifg=%s", colors.tags_line or "#7daea3"))
-  vim.cmd(string.format("highlight LeetCodeUserTagsLine guifg=%s", colors.user_tags_line or "#e78a4e"))
-end
-
--- Setup fold markers for solution files
-function M.setup_fold_settings()
-  local C = require "LeetNeoCode.config"
-  -- Use configured fold markers or fallbacks
-  local fold_start = C.fold_marker_start or "▼"
-  local fold_end = C.fold_marker_end or "▲"
-
-  -- Get supported languages extensions
-  local language_extensions = {
-    "cpp",
-    "py",
-    "java",
-    "js",
-    "ts",
-    "go",
-    "rs",
-    "swift",
-    "cs",
-    "rb",
-    "kt",
-    "php",
-    "dart",
-    "scala",
-    "c",
-    "m",
-    "erl",
-    "ex",
-    "clj",
-    "hs",
-  }
-
-  -- Create a pattern that matches all solution file types
-  -- Use the configured solution directory path
-  local solutions_path = C.cache_dir .. "/" .. C.solutions_subdir
-  local file_pattern = vim.fn.escape(solutions_path, "\\") .. "/**/*.{"
-  file_pattern = file_pattern .. table.concat(language_extensions, ",") .. "}"
-
-  vim.cmd([[
-    " Autocommands for LeetCode solution files
-    augroup LeetCodeSolutions
-      autocmd!
-      " Set fold method and markers for all solution files
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldmethod=marker
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldmarker=]] .. fold_start .. [[,]] .. fold_end .. [[
-      " Close all folds when opening a solution file
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ normal! zM
-      " Hide fold markers to make them less visually distracting
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ syntax match Comment /]] .. fold_start .. [[/ conceal
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ syntax match Comment /]] .. fold_end .. [[/ conceal
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal conceallevel=2
-      " Make sure foldenable is on and folds can be manipulated
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldenable
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldopen=all
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldclose=all
-      " Set a normal-mode mapping to toggle folds
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ nnoremap <buffer> <leader>f za
-    augroup END
-  ]])
-end
+-- Setup fold settings for solution files (delegate to highlighting module)
+M.setup_fold_settings = highlight.setup_fold_settings
 
 return M

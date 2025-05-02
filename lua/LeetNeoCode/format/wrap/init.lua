@@ -2,37 +2,14 @@
 local M = {}
 
 local C = require "LeetNeoCode.config"
+local detector = require "LeetNeoCode.format.wrap.core.detector"
+local paragraph = require "LeetNeoCode.format.wrap.core.paragraph"
 
--- Determine if a line should be wrapped
-function M.should_wrap(line)
-  return not (
-    line:match "^%s*•"
-    or line:match "^%s*%d+%."
-    or line:match "^%s*Example %d+:"
-    or line:match "^%s*Input:"
-    or line:match "^%s*Output:"
-    or line:match "^%s*Explanation:"
-    or line:match "^%s*Constraints:"
-    or line:match "^%-+$"
-    or line:match "^%s*$"
-  )
-end
+-- Determine if a line should be wrapped (delegate to detector)
+M.should_wrap = detector.should_wrap
 
--- Wrap a paragraph to the specified width
-function M.wrap_paragraph(line, width)
-  local out, remain = {}, line
-  while #remain > width do
-    local cut = remain:sub(1, width):match ".*()%s+" or width
-    if cut < width * 0.3 then
-      cut = width
-    end
-    local segment = remain:sub(1, cut):gsub("%s+$", "")
-    table.insert(out, segment)
-    remain = remain:sub(cut + 1):gsub("^%s+", "")
-  end
-  table.insert(out, remain)
-  return table.concat(out, "\n")
-end
+-- Wrap a paragraph to the specified width (delegate to paragraph)
+M.wrap_paragraph = paragraph.wrap_paragraph
 
 -- Apply custom wrapping to the entire text
 function M.apply_custom_wrap(text)
