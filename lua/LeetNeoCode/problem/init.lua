@@ -2,9 +2,24 @@
 local M = {}
 
 -- Import submodules
-M.cache = require "LeetNeoCode.problem.cache"
+M.metadata = require "LeetNeoCode.problem.core.metadata"
 M.setup = require "LeetNeoCode.problem.setup"
 M.render = require "LeetNeoCode.problem.render"
+
+-- Helper modules
+M.helpers = {
+  languages = require "LeetNeoCode.problem.helper.languages",
+  file = require "LeetNeoCode.problem.util.file_utils",
+  directory = require "LeetNeoCode.problem.util.directory",
+  fetcher = require "LeetNeoCode.problem.util.fetcher",
+  cache = require "LeetNeoCode.problem.util.cache_utils"
+}
+
+-- View modules
+M.view = {
+  description = require "LeetNeoCode.problem.view.description",
+  buffer = require "LeetNeoCode.problem.view.buffer"
+}
 
 -- Global state
 _G.leetcode_opened = _G.leetcode_opened or {}
@@ -18,10 +33,10 @@ function M.open_problem(number)
   end
 
   -- 1) Refresh metadata if needed
-  M.cache.ensure_fresh_cache()
+  M.metadata.ensure_fresh_cache()
 
   -- 2) Load metadata and resolve slug
-  local meta, slug, title, paid_only = M.cache.resolve_problem(num)
+  local meta, slug, title, paid_only = M.metadata.resolve_problem(num)
   if not meta then
     return
   end
