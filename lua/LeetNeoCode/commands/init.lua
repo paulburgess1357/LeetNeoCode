@@ -1,6 +1,7 @@
 -- Command registration module for LeetNeoCode
 local M = {}
-local notify = require "LeetNeoCode.util.notify"
+local register = require "LeetNeoCode.commands.core.register"
+local handlers = require "LeetNeoCode.commands.core.handlers"
 
 -- Setup all commands
 function M.setup(leetcode)
@@ -18,36 +19,18 @@ function M.setup(leetcode)
   end
 
   -- Register the LC command using the Lua API
-  vim.api.nvim_create_user_command("LC", function(opts)
+  register.register_command("LC", function(opts)
     -- Show notification
-    local win, buf = notify.command_notification "Running Leetcode Command..."
+    local win, buf = register.command_notification "Running Leetcode Command..."
 
     -- Process the command
     vim.schedule(function()
-      local args = opts.args
-      local arg_parts = {}
-      for part in string.gmatch(args, "%S+") do
-        table.insert(arg_parts, part)
-      end
-
-      if arg_parts[1] == "Pull" then
-        _G.leetcode_commands.pull()
-      elseif tonumber(arg_parts[1]) ~= nil then
-        _G.leetcode_commands.problem(arg_parts[1])
-      else
-        vim.notify("Unknown LC command: " .. args, vim.log.levels.WARN)
-      end
+      handlers.execute_command(leetcode, opts.args)
     end)
   end, {
     desc = "LeetCode command for various operations",
     nargs = "+",
-    complete = function(argLead, cmdLine)
-      local parts = vim.split(vim.fn.trim(cmdLine), "%s+")
-      if #parts <= 1 or (parts[1] == "LC" and #parts == 2 and argLead ~= "") then
-        return { "Pull" }
-      end
-      return {}
-    end,
+    complete = handlers.complete_command,
   })
 end
 

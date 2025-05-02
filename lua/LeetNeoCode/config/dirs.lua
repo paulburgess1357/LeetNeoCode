@@ -10,7 +10,6 @@ end
 
 -- Ensure cache directories exist
 function M.ensure_cache_dirs()
-  -- Keep this function as is (no changes needed)
   -- main dir
   if vim.fn.isdirectory(options.cache_dir) == 0 then
     vim.fn.mkdir(options.cache_dir, "p")
