@@ -1,41 +1,26 @@
 -- Image rendering module
 local M = {}
+
+local terminal = require "LeetNeoCode.images.util.terminal"
+local image_cache = require "LeetNeoCode.images.render.core.cache"
+local display = require "LeetNeoCode.images.render.core.display"
 local C = require "LeetNeoCode.config"
 
--- Check if image.nvim is available
-function M.can_display_images()
-  return pcall(require, "image")
-end
+-- Forward terminal utility functions
+M.can_display_images = terminal.can_display_images
+M.is_terminal_supported = terminal.is_terminal_supported
 
--- Check if terminal supports images (Kitty)
-function M.is_terminal_supported()
-  for _, check in ipairs(C.image_terminals or {}) do
-    local v = os.getenv(check.var)
-    if v then
-      if not check.match or v:find(check.match, 1, true) then
-        return true
-      end
-    end
-  end
-  return false
-end
-
--- Render an image in the buffer directly from URL
 -- Render an image in the buffer directly from URL
 function M.render_image(buf, win, image_url, line_num)
   -- If image rendering is disabled, just show a placeholder
   if C.render_image == false then
-    vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
-      "[Image: Display disabled - enable with render_image=true]",
-    })
+    display.show_placeholder(buf, line_num, "[Image: Display disabled - enable with render_image=true]")
     return
   end
 
   -- Fallback if image.nvim is not installed
   if not M.can_display_images() then
-    vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
-      "[Image: Unable to display - image.nvim not available]",
-    })
+    display.show_placeholder(buf, line_num, "[Image: Unable to display - image.nvim not available]")
     return
   end
 
@@ -45,88 +30,22 @@ function M.render_image(buf, win, image_url, line_num)
     return
   end
 
-  -- Cache to track image renders to prevent duplicates
-  _G.leetcode_image_cache = _G.leetcode_image_cache or {}
-  local cache_key = buf .. "-" .. line_num
-
   -- Check if we already rendered this image
-  if _G.leetcode_image_cache[cache_key] then
+  if image_cache.is_cached(buf, line_num) then
     return
   end
 
   -- Fallback if terminal does not support inline images
   if not M.is_terminal_supported() then
-    vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
-      "[Image: Unable to display - terminal doesn't support images]",
-    })
+    display.show_placeholder(buf, line_num, "[Image: Unable to display - terminal doesn't support images]")
     return
   end
 
   -- Ensure the target line is empty before rendering
   vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, { "" })
 
-  -- Calculate image dimensions
-  local default_max_width = math.floor(vim.o.columns * 0.35)
-  local max_width = nil
-  local max_height = nil
-
-  -- Get window dimensions for percentage calculations
-  local win_width = vim.api.nvim_win_get_width(win)
-  local win_height = vim.api.nvim_win_get_height(win)
-
-  -- Calculate dimensions based on percentages or fixed values
-  if C.image_max_width_pct and C.image_max_width_pct > 0 then
-    max_width = math.floor(win_width * (C.image_max_width_pct / 100))
-  else
-    max_width = C.image_max_width or default_max_width
-  end
-
-  if C.image_max_height_pct and C.image_max_height_pct > 0 then
-    max_height = math.floor(win_height * (C.image_max_height_pct / 100))
-  else
-    max_height = C.image_max_height or 20
-  end
-
-  -- Use image.nvim to render from URL
-  local img_lib = require "image"
-
-  -- Only try to use image.nvim functions if we're sure it's properly set up
-  local success, _ = pcall(function()
-    -- Clear any existing images at this position
-    img_lib.clear { buffer = buf, window = win }
-
-    -- Fetch and render the image with proper type-compatible geometry
-    img_lib.from_url(image_url, {
-      window = win,
-      buffer = buf,
-      with_virtual_padding = true,
-      x = 0,
-      y = line_num,
-      max_width_window_percentage = C.image_max_width_pct,
-      max_height_window_percentage = C.image_max_height_pct,
-    }, function(img)
-      if img then
-        -- Render with proper geometry properties according to type definitions
-        img:render {
-          width = max_width,
-          height = max_height,
-        }
-        -- Only mark as rendered if we successfully loaded and rendered the image
-        _G.leetcode_image_cache[cache_key] = true
-      else
-        vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
-          "[Image: Failed to load from URL]",
-        })
-      end
-    end)
-  end)
-
-  -- If there was an error using image.nvim, show a placeholder
-  if not success then
-    vim.api.nvim_buf_set_lines(buf, line_num, line_num + 1, false, {
-      "[Image: Disabled or image.nvim may not be set up]",
-    })
-  end
+  -- Render the image with the display utility
+  display.render_with_library(buf, win, image_url, line_num)
 end
 
 return M
