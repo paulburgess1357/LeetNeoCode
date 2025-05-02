@@ -1,6 +1,6 @@
 -- Command registration functionality
 local M = {}
-local notify = require "LeetNeoCode.util.notify"
+local notify = require "LeetNeoCode.utils.ui.notify"
 
 -- Register a command in the global space
 function M.register_command(name, callback, opts)

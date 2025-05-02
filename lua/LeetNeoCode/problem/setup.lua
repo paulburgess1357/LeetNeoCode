@@ -2,7 +2,7 @@
 local vim = vim
 local C = require "LeetNeoCode.config"
 local cache = require "LeetNeoCode.problem.cache"
-local paths = require "LeetNeoCode.util.paths"
+local paths = require "LeetNeoCode.utils.path"
 local languages = require "LeetNeoCode.problem.helper.languages"
 local file_utils = require "LeetNeoCode.problem.util.file_utils"
 local directory = require "LeetNeoCode.problem.util.directory"

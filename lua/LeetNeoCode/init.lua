@@ -7,8 +7,11 @@ M.pull = require "LeetNeoCode.pull"
 M.problem = require "LeetNeoCode.problem"
 M.format = require "LeetNeoCode.format"
 M.images = require "LeetNeoCode.images"
+M.utils = require "LeetNeoCode.utils"
+
+-- Keep old reference for backward compatibility
 M.util = {
-  paths = require "LeetNeoCode.util.paths",
+  paths = M.utils.path,
 }
 M.commands = require "LeetNeoCode.commands"
 
@@ -73,7 +76,7 @@ function M.setup(user_config)
   M.format.syntax.setup_fold_settings()
 
   if M.config.custom_copy then
-    require("LeetNeoCode.util.custom_copy").setup()
+    M.utils.leetcode_copy.setup(M.config)
   end
 end
 
