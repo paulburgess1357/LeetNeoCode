@@ -11,21 +11,26 @@ Checks: >
   portability-*,
   security-*,
   hicpp-*,
-
-  # ── explicit removals ───────────────────────────────
-  -modernize-use-trailing-return-type
-  -readability-identifier-length
-  -modernize-use-equals-default
-  -hicpp-use-equals-default          # ← NEW
-  -hicpp-braces-around-statements
-  -readability-implicit-bool-conversion
-  -readability-braces-around-statements
-  -misc-no-recursion
-  -readability-make-member-function-static
-
+  # ── explicit removals ──────────────────────────────
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -modernize-use-equals-default,
+  -hicpp-use-equals-default,
+  -hicpp-braces-around-statements,
+  -readability-implicit-bool-conversion,
+  -readability-braces-around-statements,
+  -misc-no-recursion,
+  -readability-make-member-function-static,
+  -misc-const-correctness,
+  -readability-convert-member-functions-to-static,
+  -performance-unnecessary-copy-initialization,
+  -performance-unnecessary-value-param,
+  -misc-unused-parameters,
+  -readability-redundant-declaration,
+  -misc-redundant-expression,
+  -readability-redundant-smartptr-get
 HeaderFilterRegex: ".*"
 FormatStyle: file
-
 CheckOptions:
   - key: cppcoreguidelines-avoid-magic-numbers.IgnoreNumbers
     value: "0,1"
@@ -34,4 +39,3 @@ CheckOptions:
   - key: readability-identifier-naming.FunctionCase
     value: "camelBack"
 # WarningsAsErrors: '*'
-

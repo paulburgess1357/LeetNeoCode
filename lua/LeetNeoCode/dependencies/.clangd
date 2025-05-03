@@ -2,8 +2,7 @@ CompileFlags:
   Add: [
       -std=c++23,
       -I./include,
-
-      # ── enabled warnings ───────────────────────────────────────────────
+      # ── enabled warnings ─────────────────────────────────────────────
       -Wall,
       -Wextra,
       -Wpedantic,
@@ -17,24 +16,40 @@ CompileFlags:
       -Wformat=2,
       -Wunreachable-code,
       -Wdouble-promotion,
-
-      # ── disabled compiler notes ────────────────────────────────────────
+      # ── disabled compiler notes ──────────────────────────────────────
       -Wno-unused-parameter,
       -Wno-return-type,
       -Wno-c++98-compat,
       -Wno-c++98-compat-pedantic,
       -Wno-newline-eof,
+      -Wno-sign-conversion,
+      -Wno-sign-compare,
+      -Wno-implicit-int-conversion,
+      -Wno-shorten-64-to-32,
+      -Wno-missing-prototypes,
+      -Wno-missing-variable-declarations,
+      -Wno-redundant-parens,
+      -Wno-extra-semi-stmt,
+      -Wno-unused-macros,
+      -Wno-reserved-identifier,
     ]
-
 Diagnostics:
-  UnusedIncludes: None #  turn off “header not used directly”
-
+  UnusedIncludes: None # turn off "header not used directly"
   ClangTidy:
     FastCheckFilter: "None"
-    Remove: [
+    Remove:
+      [
         modernize-use-trailing-return-type,
         readability-identifier-length,
         modernize-use-equals-default,
-        hicpp-use-equals-default, # ← NEW: hides “use = default” note
+        hicpp-use-equals-default,
         performance-unnecessary-value-param,
+        readability-make-member-function-static,
+        misc-const-correctness,
+        readability-convert-member-functions-to-static,
+        performance-unnecessary-copy-initialization,
+        misc-unused-parameters,
+        readability-redundant-declaration,
+        misc-redundant-expression,
+        readability-redundant-smartptr-get,
       ]
