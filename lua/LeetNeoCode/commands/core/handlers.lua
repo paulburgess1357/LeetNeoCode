@@ -10,6 +10,8 @@ function M.execute_command(leetcode, args)
 
   if arg_parts[1] == "Pull" then
     return leetcode.pull.pull_problems()
+  elseif arg_parts[1] == "Copy" then
+    return require("LeetNeoCode.utils.leetcode_copy").copy_current_buffer(leetcode.config)
   elseif tonumber(arg_parts[1]) ~= nil then
     return leetcode.problem.open_problem(arg_parts[1])
   else
@@ -21,7 +23,7 @@ end
 function M.complete_command(argLead, cmdLine)
   local parts = vim.split(vim.fn.trim(cmdLine), "%s+")
   if #parts <= 1 or (parts[1] == "LC" and #parts == 2 and argLead ~= "") then
-    return { "Pull" }
+    return { "Pull", "Copy" } -- Add "Copy" to completion options
   end
   return {}
 end

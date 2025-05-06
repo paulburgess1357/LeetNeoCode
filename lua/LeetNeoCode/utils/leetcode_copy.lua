@@ -14,7 +14,9 @@ end
 
 -- Process the content of code before copying (remove headers, metadata, etc.)
 function M.process_content(lines, config)
-  if #lines == 0 then return {} end
+  if #lines == 0 then
+    return {}
+  end
 
   -- Get fold markers
   local start_marker = config.fold_marker_start or "▼"
@@ -22,15 +24,49 @@ function M.process_content(lines, config)
 
   local out, skipping, saw_fold = {}, false, false
 
+  -- If copying a small section, just return it directly
+  if #lines <= 3 then
+    return lines
+  end
+
+  -- For larger selections, apply filtering
+  -- Check if the selection contains headers/imports
+  local has_header = false
   for i, line in ipairs(lines) do
-    if i == 1 and (
-      line:match "^#include" or
-      line:match "^import" or
-      line:match "^from" or
-      line:match "^package" or
-      line:match "^mod " or
-      line:match "^using "
-    ) then
+    if
+      i == 1
+      and (
+        line:match "^#include"
+        or line:match "^import"
+        or line:match "^from"
+        or line:match "^package"
+        or line:match "^mod "
+        or line:match "^using "
+      )
+    then
+      has_header = true
+      break
+    end
+  end
+
+  -- If no header detected and not copying the whole buffer, don't filter
+  if not has_header and #lines < 20 then
+    return lines
+  end
+
+  -- Apply filtering for full buffer or sections with headers
+  for i, line in ipairs(lines) do
+    if
+      i == 1
+      and (
+        line:match "^#include"
+        or line:match "^import"
+        or line:match "^from"
+        or line:match "^package"
+        or line:match "^mod "
+        or line:match "^using "
+      )
+    then
       -- Skip top header
     elseif line:find(start_marker, 1, true) then
       skipping, saw_fold = true, true
@@ -42,17 +78,9 @@ function M.process_content(lines, config)
   end
 
   -- If no folds but header existed, drop leading blank
-  if not saw_fold then
-    local buf0 = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), "\n")
-    if buf0:match "^#include" or
-       buf0:match "^import" or
-       buf0:match "^from" or
-       buf0:match "^package" or
-       buf0:match "^mod " or
-       buf0:match "^using " then
-      if out[1] == "" then
-        table.remove(out, 1)
-      end
+  if has_header and not saw_fold then
+    if #out > 0 and out[1] == "" then
+      table.remove(out, 1)
     end
   end
 
@@ -88,7 +116,7 @@ function M.copy_region(s_line, s_col, e_line, e_col, config)
     notify_message = "🧩 LeetCode Smart Copy ✓",
     notify_level = vim.log.levels.DEBUG,
     notify_timeout = 500,
-    clear_cmdline = true
+    clear_cmdline = true,
   })
 end
 
@@ -106,46 +134,138 @@ function M.yank_operator(config)
   M.copy_region(start[1], start[2], finish[1], finish[2], config)
 end
 
+-- Yank the current line
+function M.yank_line(config)
+  local line_num = vim.api.nvim_win_get_cursor(0)[1]
+  local line = vim.api.nvim_buf_get_lines(0, line_num - 1, line_num, false)[1]
+
+  -- Process the lines (filter it through our handler)
+  local processed = M.process_content({ line }, config)
+  local txt = table.concat(processed, "\n")
+
+  -- Copy to clipboard with visual feedback
+  clipboard.copy_with_feedback(txt, {
+    s_line = line_num,
+    e_line = line_num,
+    highlight_ns = HIGHLIGHT_NS,
+    highlight_group = HIGHLIGHT_GROUP,
+    notify_message = "🧩 LeetCode Smart Copy ✓",
+    notify_level = vim.log.levels.DEBUG,
+    notify_timeout = 500,
+    clear_cmdline = true,
+  })
+end
+
+-- Yank from cursor to end of line (Y)
+function M.yank_to_end(config)
+  local line_num = vim.api.nvim_win_get_cursor(0)[1]
+  local col = vim.api.nvim_win_get_cursor(0)[2]
+  local line = vim.api.nvim_buf_get_lines(0, line_num - 1, line_num, false)[1]
+  local text = line:sub(col + 1)
+
+  -- Process the text (filter it through our handler)
+  local processed = M.process_content({ text }, config)
+  local txt = table.concat(processed, "\n")
+
+  -- Copy to clipboard with visual feedback
+  clipboard.copy_with_feedback(txt, {
+    s_line = line_num,
+    s_col = col,
+    e_line = line_num,
+    e_col = #line,
+    highlight_ns = HIGHLIGHT_NS,
+    highlight_group = HIGHLIGHT_GROUP,
+    notify_message = "🧩 LeetCode Smart Copy ✓",
+    notify_level = vim.log.levels.DEBUG,
+    notify_timeout = 500,
+    clear_cmdline = true,
+  })
+end
+
+-- Copy the contents of the current buffer with LeetCode-specific processing
+function M.copy_current_buffer(config)
+  -- Get current buffer
+  local buf = vim.api.nvim_get_current_buf()
+
+  -- Get all lines from the buffer
+  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+
+  -- Process content (remove headers, metadata)
+  local processed = M.process_content(lines, config)
+  local txt = table.concat(processed, "\n")
+
+  -- Copy to clipboard with visual feedback
+  return clipboard.copy_with_feedback(txt, {
+    highlight_ns = HIGHLIGHT_NS,
+    highlight_group = HIGHLIGHT_GROUP,
+    notify_message = "🧩 LeetCode Smart Copy ✓",
+    notify_level = vim.log.levels.INFO,
+    notify_timeout = 1000,
+  })
+end
+
 -- Setup the custom yank behavior for LeetCode solution files
 function M.setup(config)
-  if not config.custom_copy then
-    return
-  end
-
   -- Setup highlight group
   M.setup_highlights(config)
 
-  -- Define the buffer pattern for LeetCode solutions
-  local sol = config.cache_dir .. "/" .. config.solutions_subdir
-  local pattern = vim.fn.escape(sol, "\\") .. "/**/*.{cpp,py,java,js,go,rs,swift,cs}"
+  -- Always register the LC Copy command
+  vim.api.nvim_create_user_command("LCCopy", function()
+    M.copy_current_buffer(config)
+  end, {})
 
-  -- Create the autocommand group
-  vim.api.nvim_create_augroup("LeetCodeCustomCopy", { clear = true })
+  -- Only override yank operations if custom_copy is true
+  if config.custom_copy then
+    -- Define the buffer pattern for LeetCode solutions
+    local sol = config.cache_dir .. "/" .. config.solutions_subdir
+    local pattern = vim.fn.escape(sol, "\\") .. "/**/*.{cpp,py,java,js,go,rs,swift,cs}"
 
-  -- Setup autocommands for solution files
-  vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
-    group = "LeetCodeCustomCopy",
-    pattern = pattern,
-    callback = function()
-      -- Normal mode: y{motion}
-      vim.api.nvim_buf_set_keymap(
-        0,
-        "n",
-        "y",
-        "<cmd>set operatorfunc=v:lua.require'LeetNeoCode.utils.leetcode_copy'.yank_operator<CR>g@",
-        { noremap = true, silent = true }
-      )
+    -- Create the autocommand group
+    vim.api.nvim_create_augroup("LeetCodeCustomCopy", { clear = true })
 
-      -- Visual mode: y
-      vim.api.nvim_buf_set_keymap(
-        0,
-        "x",
-        "y",
-        "<cmd>lua require('LeetNeoCode.utils.leetcode_copy').custom_yank(require('LeetNeoCode.config'))<CR>",
-        { noremap = true, silent = true }
-      )
-    end,
-  })
+    -- Setup autocommands for solution files
+    vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+      group = "LeetCodeCustomCopy",
+      pattern = pattern,
+      callback = function()
+        -- Normal mode: y{motion}
+        vim.api.nvim_buf_set_keymap(
+          0,
+          "n",
+          "y",
+          "<cmd>set operatorfunc=v:lua.require'LeetNeoCode.utils.leetcode_copy'.yank_operator<CR>g@",
+          { noremap = true, silent = true }
+        )
+
+        -- Visual mode: y
+        vim.api.nvim_buf_set_keymap(
+          0,
+          "x",
+          "y",
+          "<cmd>lua require('LeetNeoCode.utils.leetcode_copy').custom_yank(require('LeetNeoCode.config'))<CR>",
+          { noremap = true, silent = true }
+        )
+
+        -- Normal mode: yy (yank line)
+        vim.api.nvim_buf_set_keymap(
+          0,
+          "n",
+          "yy",
+          "<cmd>lua require('LeetNeoCode.utils.leetcode_copy').yank_line(require('LeetNeoCode.config'))<CR>",
+          { noremap = true, silent = true }
+        )
+
+        -- Add other common yank mappings
+        vim.api.nvim_buf_set_keymap(
+          0,
+          "n",
+          "Y",
+          "<cmd>lua require('LeetNeoCode.utils.leetcode_copy').yank_to_end(require('LeetNeoCode.config'))<CR>",
+          { noremap = true, silent = true }
+        )
+      end,
+    })
+  end
 end
 
 return M
