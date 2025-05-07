@@ -32,6 +32,31 @@ function M.setup(leetcode)
     nargs = "+",
     complete = handlers.complete_command,
   })
+
+  -- Add no-space versions of commands
+  register.register_command("LCPull", function()
+    -- Show notification
+    local win, buf = register.command_notification "Running Leetcode Pull..."
+
+    -- Call directly
+    vim.schedule(function()
+      leetcode.pull.pull_problems()
+    end)
+  end, {
+    desc = "Pull LeetCode problems (no space version)",
+  })
+
+  register.register_command("LCCopy", function()
+    -- Show notification
+    local win, buf = register.command_notification "Running Leetcode Copy..."
+
+    -- Call directly
+    vim.schedule(function()
+      require("LeetNeoCode.utils.leetcode_copy").copy_current_buffer(leetcode.config)
+    end)
+  end, {
+    desc = "Copy LeetCode solution (no space version)",
+  })
 end
 
 return M
