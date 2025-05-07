@@ -227,8 +227,8 @@ return {
     ---------------------------------------------------------------------------
     -- Misc
     ---------------------------------------------------------------------------
-    custom_copy = true, -- When true, excludes includes and metadata when copying
-    custom_copy_color = "#34C759",
+    smart_copy = true, -- When true, excludes includes and metadata when copying
+    smart_copy_color = "#34C759",
 
   config = function(_, opts)
     -----------------------------------------------------------------------

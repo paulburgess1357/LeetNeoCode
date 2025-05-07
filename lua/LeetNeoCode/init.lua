@@ -75,7 +75,7 @@ function M.setup(user_config)
   M.format.syntax.setup_solution_highlighting()
   M.format.syntax.setup_fold_settings()
 
-  if M.config.custom_copy then
+  if M.config.smart_copy then
     M.utils.leetcode_copy.setup(M.config)
   end
 end

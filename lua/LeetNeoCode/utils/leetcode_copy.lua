@@ -9,7 +9,7 @@ local HIGHLIGHT_GROUP = "LeetNeoCodeCopyFlashGroup"
 -- Setup highlight group
 function M.setup_highlights(config)
   -- Define the highlight group based on config
-  vim.api.nvim_set_hl(0, HIGHLIGHT_GROUP, config.custom_copy_color and { bg = config.custom_copy_color } or {})
+  vim.api.nvim_set_hl(0, HIGHLIGHT_GROUP, config.smart_copy_color and { bg = config.smart_copy_color } or {})
 end
 
 -- Process the content of code before copying (remove headers, metadata, etc.)
@@ -221,18 +221,18 @@ function M.setup(config)
     M.copy_current_buffer(config)
   end, {})
 
-  -- Only override yank operations if custom_copy is true
-  if config.custom_copy then
+  -- Only override yank operations if smart_copy is true
+  if config.smart_copy then
     -- Define the buffer pattern for LeetCode solutions
     local sol = config.cache_dir .. "/" .. config.solutions_subdir
     local pattern = vim.fn.escape(sol, "\\") .. "/**/*.{cpp,py,java,js,go,rs,swift,cs}"
 
     -- Create the autocommand group
-    vim.api.nvim_create_augroup("LeetCodeCustomCopy", { clear = true })
+    vim.api.nvim_create_augroup("LeetCodeSmartCopy", { clear = true })
 
     -- Setup autocommands for solution files
     vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
-      group = "LeetCodeCustomCopy",
+      group = "LeetCodeSmartCopy",
       pattern = pattern,
       callback = function()
         -- Normal mode: y{motion}
