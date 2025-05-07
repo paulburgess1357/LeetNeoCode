@@ -194,8 +194,15 @@ function M.copy_current_buffer(config)
   local processed = M.process_content(lines, config)
   local txt = table.concat(processed, "\n")
 
+  -- Get the total line count for highlighting the full buffer
+  local line_count = vim.api.nvim_buf_line_count(buf)
+
   -- Copy to clipboard with visual feedback
   return clipboard.copy_with_feedback(txt, {
+    s_line = 1,
+    s_col = 0,
+    e_line = line_count,
+    e_col = #(vim.api.nvim_buf_get_lines(buf, line_count - 1, line_count, false)[1] or ""),
     highlight_ns = HIGHLIGHT_NS,
     highlight_group = HIGHLIGHT_GROUP,
     notify_message = "🧩 LeetCode Smart Copy ✓",
