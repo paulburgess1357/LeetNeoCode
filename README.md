@@ -280,14 +280,16 @@ return {
 | -------------- | ---------------------------------------------------------- |
 | `:LC Pull`     | (re‑)download the full problem list into the cache         |
 | `:LC <number>` | Open Problem – if the cache is stale it is refreshed first |
+| `:LC Copy`     | Smart Copy: Excludes `includes/imports` and folded comment section from buffer |
 
 ### Typical workflow 📚 (no execution, just editing)
 
 1. `:LC Pull` – fetch metadata (run again occasionally to refresh)
 2. `:LC 1` – opens "**Two Sum**" in a new tab: left‑pane description, right‑pane `Solution_1.cpp`
-3. Solve the problem locally, build / test with your own tools
-4. Need another attempt? Run `:LC 1` again and you'll get `Solution_2.cpp`
-5. Grep or Telescope through `solutions/` when you want to revisit old work
+3. Solve the problem locally.
+4. `LC Copy` (or yank the full file if `smart_copy = true`); Paste into the Leetcode code section.
+5. Need another attempt? Run `:LC 1` again and you'll get `Solution_2.cpp`
+6. Grep or Telescope through `solutions/` when you want to revisit old work
 
 ---
 
