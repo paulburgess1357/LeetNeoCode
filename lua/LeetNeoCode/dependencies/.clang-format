@@ -3,4 +3,10 @@ IndentWidth: 2
 ColumnLimit: 140
 PointerAlignment: Left
 ReferenceAlignment: Left
-AllowShortIfStatementsOnASingleLine: true
+
+# keep single-statement loops on one line
+AllowShortLoopsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+
+# never put a space before '(' anywhere
+SpaceBeforeParens: Never
