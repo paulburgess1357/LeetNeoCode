@@ -33,7 +33,7 @@ HeaderFilterRegex: ".*"
 FormatStyle: file
 CheckOptions:
   - key: cppcoreguidelines-avoid-magic-numbers.IgnoreNumbers
-    value: "0,1"
+    value: "0,1,7,26"
   - key: readability-identifier-naming.ClassCase
     value: "CamelCase"
   - key: readability-identifier-naming.FunctionCase
