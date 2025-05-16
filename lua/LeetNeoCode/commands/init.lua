@@ -57,6 +57,19 @@ function M.setup(leetcode)
   end, {
     desc = "Copy LeetCode solution (no space version)",
   })
+
+  -- Add the new LCRecent command
+  register.register_command("LCRecent", function()
+    -- Show notification
+    local win, buf = register.command_notification "Finding Recent Solution..."
+
+    -- Call directly
+    vim.schedule(function()
+      handlers.execute_command(leetcode, "Recent")
+    end)
+  end, {
+    desc = "Open most recent LeetCode solution (no space version)",
+  })
 end
 
 return M

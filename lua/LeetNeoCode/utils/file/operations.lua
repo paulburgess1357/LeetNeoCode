@@ -48,7 +48,7 @@ end
 function M.read_file_contents(path)
   local file = io.open(path, "r")
   if file then
-    local content = file:read("*all")
+    local content = file:read "*all"
     file:close()
     return content
   end
@@ -64,6 +64,43 @@ function M.write_to_file(path, content)
     return true
   end
   return false
+end
+
+-- Find the most recently modified solution file
+function M.find_most_recent_solution(config)
+  local sol_dir = config.cache_dir .. "/" .. config.solutions_subdir
+
+  -- Check if the solutions directory exists
+  if vim.fn.isdirectory(sol_dir) == 0 then
+    return nil, "No solutions directory found"
+  end
+
+  -- Find all solution files in all problem directories
+  local solution_pattern = sol_dir .. "/LC**/Solution_*.*"
+  local solution_files = vim.fn.glob(solution_pattern, false, true)
+
+  if #solution_files == 0 then
+    return nil, "No solution files found"
+  end
+
+  -- Find the most recently modified file
+  local most_recent_file = nil
+  local most_recent_time = 0
+
+  for _, file_path in ipairs(solution_files) do
+    -- Use vim.fn.getftime instead of vim.loop.fs_stat
+    local mtime = vim.fn.getftime(file_path)
+    if mtime > most_recent_time then
+      most_recent_time = mtime
+      most_recent_file = file_path
+    end
+  end
+
+  if not most_recent_file then
+    return nil, "Failed to determine the most recent solution file"
+  end
+
+  return most_recent_file
 end
 
 return M
