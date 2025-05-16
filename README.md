@@ -282,6 +282,7 @@ return {
 | `:LC Pull`     | (re‑)download the full problem list into the cache                             |
 | `:LC <number>` | Open Problem – if the cache is stale it is refreshed first                     |
 | `:LC Copy`     | Smart Copy: Excludes `includes/imports` and folded comment section from buffer |
+| `:LC Recent`   | Pull the code for your most recent worked on solution                          |
 
 ### Typical workflow 📚 (no execution, just editing)
 
@@ -291,6 +292,7 @@ return {
 4. `LC Copy` (or yank the full file if `smart_copy = true`); Paste into the Leetcode code section.
 5. Need another attempt? Run `:LC 1` again and you'll get `Solution_2.cpp`
 6. Grep or Telescope through `solutions/` when you want to revisit old work
+7. Want to view your most recent code? Type `LC Recent` to quickly pull in your most recent, worked on solution.
 
 ---
 
