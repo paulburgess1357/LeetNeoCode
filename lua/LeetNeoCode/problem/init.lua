@@ -1,5 +1,6 @@
 -- Problem module (main interface)
 local M = {}
+local C = require "LeetNeoCode.config"
 
 -- Import submodules
 M.metadata = require "LeetNeoCode.problem.core.metadata"
@@ -12,16 +13,16 @@ M.helpers = {
   file = require "LeetNeoCode.problem.util.file_utils",
   directory = require "LeetNeoCode.problem.util.directory",
   fetcher = require "LeetNeoCode.problem.util.fetcher",
-  cache = require "LeetNeoCode.problem.util.cache_utils"
+  cache = require "LeetNeoCode.problem.util.cache_utils",
 }
 
 -- View modules
 M.view = {
   description = require "LeetNeoCode.problem.view.description",
-  buffer = require "LeetNeoCode.problem.view.buffer"
+  buffer = require "LeetNeoCode.problem.view.buffer",
 }
 
--- Global state
+-- Global state - ensure it exists
 _G.leetcode_opened = _G.leetcode_opened or {}
 
 -- Main function to open a problem
@@ -51,17 +52,25 @@ function M.open_problem(number)
   -- 4) Set up dependencies
   M.setup.setup_dependencies(prob_dir)
 
-  -- 5) Fetch problem data
-  local problem_data, snippets = M.setup.fetch_problem_data(slug)
+  -- 5) Fetch problem data - respect code_only setting
+  local problem_data, snippets = M.setup.fetch_problem_data(slug, C.code_only)
 
   -- 6) Save solution file
   local fpath, version = M.setup.save_solution_file(prob_dir, snippets, problem_data)
 
-  -- 7) Record open count
-  _G.leetcode_opened[slug] = (_G.leetcode_opened[slug] or 0) + 1
+  -- 7) Record open count - make sure the global table exists
+  if not _G.leetcode_opened then
+    -- Reinitialize if somehow it got cleared
+    _G.leetcode_opened = {}
+  end
 
-  -- 8) Open tab with splits
-  M.render.open_problem_view(problem_data, snippets, fpath, num, title, slug)
+  -- Now safely increment the counter
+  if slug then
+    _G.leetcode_opened[slug] = (_G.leetcode_opened[slug] or 0) + 1
+  end
+
+  -- 8) Open tab with splits - respect code_only setting
+  M.render.open_problem_view(problem_data, snippets, fpath, num, title, slug, C.code_only)
 
   vim.notify(string.format("Loaded problem #%d: %s (v%d)", num, title, version), vim.log.levels.INFO)
 end

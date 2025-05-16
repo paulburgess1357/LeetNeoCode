@@ -126,6 +126,7 @@ return {
     -- Core settings
     -------------------------------------------------------------------------
     default_language = "cpp", -- valid values: cpp, python, java, javascript, go, rust, swift, csharp
+    code_only = false, -- when true, only display code.  When false, show both description and code.
 
     -- Storage paths ----------------------------------------------------------
     cache_dir = vim.fn.stdpath("cache") .. "/LeetNeoCode",
@@ -276,10 +277,10 @@ return {
 
 ## Usage
 
-| Command        | Action                                                     |
-| -------------- | ---------------------------------------------------------- |
-| `:LC Pull`     | (re‑)download the full problem list into the cache         |
-| `:LC <number>` | Open Problem – if the cache is stale it is refreshed first |
+| Command        | Action                                                                         |
+| -------------- | ------------------------------------------------------------------------------ |
+| `:LC Pull`     | (re‑)download the full problem list into the cache                             |
+| `:LC <number>` | Open Problem – if the cache is stale it is refreshed first                     |
 | `:LC Copy`     | Smart Copy: Excludes `includes/imports` and folded comment section from buffer |
 
 ### Typical workflow 📚 (no execution, just editing)

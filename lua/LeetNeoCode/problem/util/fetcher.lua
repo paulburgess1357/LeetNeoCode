@@ -1,28 +1,42 @@
 -- Problem data fetching utilities
 local vim = vim
-local pull = require "LeetNeoCode.pull"
+local description = require "LeetNeoCode.pull.description"
+local code = require "LeetNeoCode.pull.code"
 
 local M = {}
 
--- Fetch problem data (description and code)
-function M.fetch_problem_data(slug)
-  local problem_data = {}
-  do
-    local ok, result = pcall(pull.description.fetch_description, slug)
-    problem_data = ok and type(result) == "table" and result or { content = "" }
-    if problem_data.content == "" then
-      vim.notify("Could not fetch description for problem", vim.log.levels.WARN)
-    end
+-- Fetch problem description only
+function M.fetch_problem_description(slug)
+  if not slug or slug == "" then
+    vim.notify("Invalid problem slug provided", vim.log.levels.ERROR)
+    return nil
   end
 
-  local snippets
-  do
-    local ok, res = pcall(pull.code.fetch_stub, slug)
-    snippets = ok and res or nil
-    if not snippets then
-      vim.notify("Could not fetch code stub for problem", vim.log.levels.WARN)
-    end
+  return description.fetch_description(slug)
+end
+
+-- Fetch code stub only
+function M.fetch_code_stub(slug)
+  if not slug or slug == "" then
+    vim.notify("Invalid problem slug provided", vim.log.levels.ERROR)
+    return nil
   end
+
+  return code.fetch_stub(slug)
+end
+
+-- Fetch both problem description and code snippet (original function for backward compatibility)
+function M.fetch_problem(slug)
+  if not slug or slug == "" then
+    vim.notify("Invalid problem slug provided", vim.log.levels.ERROR)
+    return nil, nil
+  end
+
+  vim.notify("Fetching problem: " .. slug, vim.log.levels.INFO)
+
+  -- Fetch description and code
+  local problem_data = M.fetch_problem_description(slug)
+  local snippets = M.fetch_code_stub(slug)
 
   return problem_data, snippets
 end

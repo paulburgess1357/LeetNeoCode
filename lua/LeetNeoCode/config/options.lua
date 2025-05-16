@@ -4,6 +4,7 @@ local M = {
   -- Core settings
   ---------------------------------------------------------------------------
   default_language = "cpp", -- valid values: cpp, python, java, javascript, go, rust, swift, csharp
+  code_only = false, -- when true, only display code.  When false, show both description and code.
 
   -- Storage paths ----------------------------------------------------------
   cache_dir = vim.fn.stdpath "cache" .. "/LeetNeoCode",
