@@ -66,7 +66,7 @@ function M.write_to_file(path, content)
   return false
 end
 
--- Find the most recently modified solution file
+-- Find the most recently modified solution file (zero-padded format only)
 function M.find_most_recent_solution(config)
   local sol_dir = config.cache_dir .. "/" .. config.solutions_subdir
 
@@ -75,8 +75,8 @@ function M.find_most_recent_solution(config)
     return nil, "No solutions directory found"
   end
 
-  -- Find all solution files in all problem directories
-  local solution_pattern = sol_dir .. "/LC**/Solution_*.*"
+  -- Find all solution files in zero-padded format directories (LC00123_)
+  local solution_pattern = sol_dir .. "/LC[0-9][0-9][0-9][0-9][0-9]_*/Solution_*.*"
   local solution_files = vim.fn.glob(solution_pattern, false, true)
 
   if #solution_files == 0 then

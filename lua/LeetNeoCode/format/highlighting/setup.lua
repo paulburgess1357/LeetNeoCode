@@ -105,7 +105,7 @@ function M.setup_solution_highlighting()
   vim.cmd(string.format("highlight LeetCodeUserTagsLine guifg=%s", colors.user_tags_line or "#e78a4e"))
 end
 
--- Setup fold markers for solution files
+-- Setup fold markers for solution files with zero-padded folder format
 function M.setup_fold_settings()
   -- Use configured fold markers or fallbacks
   local fold_start = C.fold_marker_start or "▼"
@@ -117,11 +117,11 @@ function M.setup_fold_settings()
     "rb", "kt", "php", "dart", "scala", "c", "m", "erl", "ex", "clj", "hs",
   }
 
-  -- Create a pattern that matches all solution file types
-  -- Use the configured solution directory path
+  -- Create patterns for zero-padded solution file format (LC00123_)
   local solutions_path = C.cache_dir .. "/" .. C.solutions_subdir
-  local file_pattern = vim.fn.escape(solutions_path, "\\") .. "/**/*.{"
-  file_pattern = file_pattern .. table.concat(language_extensions, ",") .. "}"
+  local escaped_path = vim.fn.escape(solutions_path, "\\")
+
+  local file_pattern = escaped_path .. "/**/LC[0-9][0-9][0-9][0-9][0-9]_*.{" .. table.concat(language_extensions, ",") .. "}"
 
   vim.cmd([[
     " Autocommands for LeetCode solution files

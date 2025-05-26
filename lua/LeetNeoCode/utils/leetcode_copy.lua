@@ -223,9 +223,9 @@ function M.setup(config)
 
   -- Only override yank operations if smart_copy is true
   if config.smart_copy then
-    -- Define the buffer pattern for LeetCode solutions
+    -- Define the buffer pattern for LeetCode solutions (zero-padded format only)
     local sol = config.cache_dir .. "/" .. config.solutions_subdir
-    local pattern = vim.fn.escape(sol, "\\") .. "/**/*.{cpp,py,java,js,go,rs,swift,cs}"
+    local pattern = vim.fn.escape(sol, "\\") .. "/**/LC[0-9][0-9][0-9][0-9][0-9]_*.{cpp,py,java,js,go,rs,swift,cs}"
 
     -- Create the autocommand group
     vim.api.nvim_create_augroup("LeetCodeSmartCopy", { clear = true })

@@ -5,20 +5,21 @@ local file_utils = require "LeetNeoCode.problem.util.file_utils"
 
 local M = {}
 
--- Prepare solution directory for a problem
+-- Prepare solution directory for a problem with zero-padded number
 function M.prepare_solution_dir(num, title, slug)
   local safe_title = (title or slug):gsub("%W+", "_"):gsub("^_+", ""):gsub("_+$", "")
   local sol_base = C.cache_dir .. "/" .. C.solutions_subdir
 
   file_utils.ensure_directory(sol_base)
 
-  local prob_dir = sol_base .. "/LC" .. num .. "_" .. safe_title
+  -- Use zero-padded 5-digit number format
+  local prob_dir = sol_base .. "/LC" .. string.format("%05d", num) .. "_" .. safe_title
   file_utils.ensure_directory(prob_dir)
 
   return prob_dir
 end
 
--- Get problem-specific subdirectory
+-- Get problem-specific subdirectory with zero-padded number
 function M.get_problem_subdir(num, title, slug, subdir)
   local prob_dir = M.prepare_solution_dir(num, title, slug)
 
