@@ -14,5 +14,6 @@ M.clipboard = require "LeetNeoCode.utils.clipboard"
 
 -- LeetCode-specific utilities
 M.leetcode_copy = require "LeetNeoCode.utils.leetcode_copy"
+M.recent_solutions = require "LeetNeoCode.utils.recent_solutions"
 
 return M

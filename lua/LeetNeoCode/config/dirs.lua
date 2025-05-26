@@ -29,6 +29,11 @@ function M.ensure_cache_dirs()
     local img_dir = options.cache_dir .. "/" .. options.images_subdir
     if vim.fn.isdirectory(img_dir) == 0 then
       vim.fn.mkdir(img_dir, "p")
+  end
+  -- recent solutions (always create this)
+  local recent_dir = options.cache_dir .. "/" .. options.solutions_recent_subdir
+  if vim.fn.isdirectory(recent_dir) == 0 then
+    vim.fn.mkdir(recent_dir, "p")
     end
   end
 end

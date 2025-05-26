@@ -58,7 +58,7 @@ function M.setup(leetcode)
     desc = "Copy LeetCode solution (no space version)",
   })
 
-  -- Add the LCRecent command
+  -- Add the new LCRecent command
   register.register_command("LCRecent", function()
     -- Show notification
     local win, buf = register.command_notification "Finding Recent Solution..."
@@ -69,26 +69,6 @@ function M.setup(leetcode)
     end)
   end, {
     desc = "Open most recent LeetCode solution (no space version)",
-  })
-
-  -- Add the new LCRecentStore command
-  register.register_command("LCRecentStore", function()
-    local win, buf = register.command_notification "Updating Recent Solutions..."
-    vim.schedule(function()
-      require("LeetNeoCode.utils.recent_solutions").update_recent_solutions()
-    end)
-  end, {
-    desc = "Update recent solutions directory with N most recent problems",
-  })
-
-  -- Add the new LCRecentList command
-  register.register_command("LCRecentList", function()
-    local win, buf = register.command_notification "Listing Recent Solutions..."
-    vim.schedule(function()
-      handlers.execute_command(leetcode, "RecentList")
-    end)
-  end, {
-    desc = "List recent solutions information",
   })
 end
 

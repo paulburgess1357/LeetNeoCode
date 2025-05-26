@@ -12,6 +12,8 @@ local M = {
   cache_file = "leetcode_cache.json",
   cache_expiry_days = 14,
   solutions_subdir = "solutions",
+  solutions_recent_subdir = "solutions_recent",
+  recent_solutions_count = 10,
   images_subdir = "images",
 
   API_URL = "https://leetcode.com/api/problems/all/",

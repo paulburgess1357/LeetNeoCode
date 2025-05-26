@@ -15,6 +15,8 @@ _A distraction‑free way to fetch, read and solve LeetCode problems **inside Ne
 - Open a problem description side‑by‑side with starter code
 - Highlighted, nicely wrapped markdown with optional inline images<sup>†</sup>
 - Per‑problem solution folder with automatic versioning (`Solution_1.cpp`, `Solution_2.cpp`, …)
+- **Zero-padded problem numbering** for clean organization (`LC00001_Two_Sum`, `LC00056_Merge_Intervals`)
+- **Recent solutions management** with configurable quick access to your most worked-on problems
 - Metadata comment (difficulty, tags, your own tags) folded at the bottom of every file
 - Support for multiple programming languages (C++, Python, Java, JavaScript, Go, and more)
 - Automatic code dependencies setup with appropriate language-specific helpers
@@ -134,9 +136,15 @@ return {
     cache_file = "leetcode_cache.json",
     cache_expiry_days = 14,
     solutions_subdir = "solutions",
+    solutions_recent_subdir = "solutions_recent", -- directory for recent solutions
     images_subdir = "images",
 
     API_URL = "https://leetcode.com/api/problems/all/",
+
+    -------------------------------------------------------------------------
+    -- Recent Solutions Management
+    -------------------------------------------------------------------------
+    recent_solutions_count = 10, -- number of recent solutions to keep in recent directory
 
     -------------------------------------------------------------------------
     -- Notification timing
@@ -277,12 +285,26 @@ return {
 
 ## Usage
 
-| Command        | Action                                                                         |
-| -------------- | ------------------------------------------------------------------------------ |
-| `:LC Pull`     | (re‑)download the full problem list into the cache                             |
-| `:LC <number>` | Open Problem – if the cache is stale it is refreshed first                     |
-| `:LC Copy`     | Smart Copy: Excludes `includes/imports` and folded comment section from buffer |
-| `:LC Recent`   | Pull the code for your most recent worked on solution                          |
+| Command            | Action                                                                         |
+| ------------------ | ------------------------------------------------------------------------------ |
+| `:LC Pull`         | (re‑)download the full problem list into the cache                             |
+| `:LC <number>`     | Open Problem – if the cache is stale it is refreshed first                     |
+| `:LC Copy`         | Smart Copy: Excludes `includes/imports` and folded comment section from buffer |
+| `:LC Recent`       | Pull the code for your most recent worked on solution                          |
+| `:LC Recent Store` | Update recent solutions directory with N most recent problem folders           |
+| `:LC Recent List`  | Display a list of recent solutions with timestamps                             |
+
+### Alternative Command Formats
+
+All commands support multiple formats for convenience:
+
+| Spaced Commands    | Single-word Commands | Standalone Commands |
+| ------------------ | -------------------- | ------------------- |
+| `:LC Recent`       | `:LC Recent`         | `:LCRecent`         |
+| `:LC Recent Store` | `:LC RecentStore`    | `:LCRecentStore`    |
+| `:LC Recent List`  | `:LC RecentList`     | `:LCRecentList`     |
+| `:LC Pull`         | `:LC Pull`           | `:LCPull`           |
+| `:LC Copy`         | `:LC Copy`           | `:LCCopy`           |
 
 ### Typical workflow 📚 (no execution, just editing)
 
@@ -291,8 +313,10 @@ return {
 3. Solve the problem locally.
 4. `LC Copy` (or yank the full file if `smart_copy = true`); Paste into the Leetcode code section.
 5. Need another attempt? Run `:LC 1` again and you'll get `Solution_2.cpp`
-6. Grep or Telescope through `solutions/` when you want to revisit old work
-7. Want to view your most recent code? Type `LC Recent` to quickly pull in your most recent, worked on solution.
+6. **Manage recent work**: Use `:LC Recent Store` to copy your 10 most recent problems to a separate directory
+7. **Quick access**: Use `:LC Recent List` to see your recent work with timestamps
+8. Grep or Telescope through `solutions/` when you want to revisit old work
+9. Want to view your most recent code? Type `LC Recent` to quickly pull in your most recent, worked on solution.
 
 ---
 
@@ -302,15 +326,42 @@ return {
 ~/.cache/LeetNeoCode/
 ├── meta/
 │   └── leetcode_cache.json
-└── solutions/
-    └── LC1_Two_Sum/
+├── solutions/
+│   ├── LC00001_Two_Sum/
+│   │   ├── Solution_1.cpp
+│   │   ├── Solution_2.cpp
+│   │   ├── lc_includes.h -> symlink to plugin/dependencies
+│   │   └── .clang-format
+│   ├── LC00056_Merge_Intervals/
+│   │   ├── Solution_1.cpp
+│   │   └── lc_includes.h -> symlink to plugin/dependencies
+│   └── LC00015_3Sum/
+│       ├── Solution_1.cpp
+│       └── lc_includes.h -> symlink to plugin/dependencies
+└── solutions_recent/
+    ├── LC00056_Merge_Intervals/     # Copy of most recent
+    │   ├── Solution_1.cpp
+    │   └── lc_includes.h
+    ├── LC00001_Two_Sum/             # Copy of 2nd most recent
+    │   ├── Solution_1.cpp
+    │   ├── Solution_2.cpp
+    │   └── lc_includes.h
+    └── LC00015_3Sum/                # Copy of 3rd most recent
         ├── Solution_1.cpp
-        ├── Solution_2.cpp
-        ├── lc_includes.h -> symlink to plugin/dependencies
-        └── .clang-format
+        └── lc_includes.h
 ```
 
 _(Example for C++ – other languages get their own helper files.)_
+
+### Recent Solutions Management
+
+The plugin provides a dedicated recent solutions system:
+
+- **Zero-padded numbering**: All problem folders use 5-digit zero-padded format (`LC00001_`, `LC00056_`, etc.) for clean alphabetical sorting
+- **Configurable count**: Set `recent_solutions_count` to control how many recent problems to track (default: 10)
+- **Separate directory**: Recent solutions are copied to `solutions_recent/` without affecting your main solutions
+- **Automatic updates**: Use `:LC Recent Store` to refresh the recent directory with your most recently modified problems
+- **Quick overview**: Use `:LC Recent List` to see formatted list with timestamps and problem details
 
 ---
 
@@ -351,6 +402,13 @@ The plugin supports all LeetCode-offered languages with:
 - Appropriate file extensions and syntax highlighting
 - Language-specific include/import statements
 - Proper formatting configuration (.clang-format, .editorconfig, etc.)
+
+### Organization & File Structure
+
+- **Zero-padded problem numbers**: All directories use format `LC00001_Problem_Name` for consistent sorting
+- **Automatic versioning**: Multiple solution attempts are numbered (`Solution_1.cpp`, `Solution_2.cpp`)
+- **Recent solutions tracking**: Configurable recent solutions directory for quick access to your latest work
+- **Language-specific dependencies**: Automatic setup of include files, linters, and formatters per language
 
 ---
 
