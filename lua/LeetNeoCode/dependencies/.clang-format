@@ -10,3 +10,7 @@ AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 
 # never put a space before '(' anywhere
 SpaceBeforeParens: Never
+
+# Stop one line reformmating for functions and constructors
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: Never
