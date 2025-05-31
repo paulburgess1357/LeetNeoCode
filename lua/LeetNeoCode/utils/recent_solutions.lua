@@ -158,4 +158,32 @@ function M.get_recent_solutions_info()
   return info
 end
 
+-- Display recent solutions as a notification
+function M.show_recent_solutions_notification()
+  local info = M.get_recent_solutions_info()
+
+  if #info == 0 then
+    vim.notify("No recent solutions found", vim.log.levels.WARN)
+    return
+  end
+
+  -- Build notification lines
+  local lines = { "Recent Solutions (most recent first):", string.rep("─", 50) }
+  for _, item in ipairs(info) do
+    table.insert(lines, string.format(
+      "%2d. LC%s - %s (%s)",
+      item.rank,
+      item.problem_num,
+      item.title,
+      item.modified_time
+    ))
+  end
+
+  -- Show persistent notification
+  local notify = require "LeetNeoCode.utils.ui.notify"
+  local timeout = C.recent_list_notification_timeout or 5000
+
+  return notify.persistent_notification(lines, timeout, true)
+end
+
 return M

@@ -83,12 +83,22 @@ function M.setup(leetcode)
 
   -- Add the new LCRecentList command
   register.register_command("LCRecentList", function()
-    local win, buf = register.command_notification "Listing Recent Solutions..."
+    local win, buf = register.command_notification "Showing Recent Solutions..."
     vim.schedule(function()
       handlers.execute_command(leetcode, "RecentList")
     end)
   end, {
-    desc = "List recent solutions information",
+    desc = "Show recent solutions as notification",
+  })
+
+  -- Add the new LCDismiss command
+  register.register_command("LCDismiss", function()
+    local win, buf = register.command_notification "Dismissing Notifications..."
+    vim.schedule(function()
+      handlers.execute_command(leetcode, "Dismiss")
+    end)
+  end, {
+    desc = "Dismiss all active LeetCode notifications",
   })
 end
 

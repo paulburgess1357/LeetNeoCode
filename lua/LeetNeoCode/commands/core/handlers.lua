@@ -32,73 +32,21 @@ function M.execute_command(leetcode, args)
     local recent_utils = require "LeetNeoCode.utils.recent_solutions"
     return recent_utils.update_recent_solutions()
   elseif arg_parts[1] == "Recent" and arg_parts[2] == "List" then
-    -- LC Recent List → List recent solutions info
+    -- LC Recent List → Show recent solutions notification
     local recent_utils = require "LeetNeoCode.utils.recent_solutions"
-    local info = recent_utils.get_recent_solutions_info()
-
-    if #info == 0 then
-      vim.notify("No recent solutions found", vim.log.levels.WARN)
-      return
-    end
-
-    -- Display the information
-    local lines = { "Recent Solutions (most recent first):", string.rep("-", 50) }
-    for _, item in ipairs(info) do
-      table.insert(lines, string.format(
-        "%2d. LC%s - %s (%s)",
-        item.rank,
-        item.problem_num,
-        item.title,
-        item.modified_time
-      ))
-    end
-
-    -- Create a new buffer to display the information
-    vim.cmd("tabnew")
-    local buf = vim.api.nvim_get_current_buf()
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-    vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
-    vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-    vim.api.nvim_buf_set_option(buf, "modifiable", false)
-    vim.api.nvim_buf_set_name(buf, "Recent Solutions")
-
-    return
+    return recent_utils.show_recent_solutions_notification()
   elseif arg_parts[1] == "RecentStore" then
     -- LC RecentStore (backwards compatibility) → Update recent solutions
     local recent_utils = require "LeetNeoCode.utils.recent_solutions"
     return recent_utils.update_recent_solutions()
   elseif arg_parts[1] == "RecentList" then
-    -- LC RecentList (backwards compatibility) → List recent solutions info
+    -- LC RecentList (backwards compatibility) → Show recent solutions notification
     local recent_utils = require "LeetNeoCode.utils.recent_solutions"
-    local info = recent_utils.get_recent_solutions_info()
-
-    if #info == 0 then
-      vim.notify("No recent solutions found", vim.log.levels.WARN)
-      return
-    end
-
-    -- Display the information
-    local lines = { "Recent Solutions (most recent first):", string.rep("-", 50) }
-    for _, item in ipairs(info) do
-      table.insert(lines, string.format(
-        "%2d. LC%s - %s (%s)",
-        item.rank,
-        item.problem_num,
-        item.title,
-        item.modified_time
-      ))
-    end
-
-    -- Create a new buffer to display the information
-    vim.cmd("tabnew")
-    local buf = vim.api.nvim_get_current_buf()
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-    vim.api.nvim_buf_set_option(buf, "buftype", "nofile")
-    vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-    vim.api.nvim_buf_set_option(buf, "modifiable", false)
-    vim.api.nvim_buf_set_name(buf, "Recent Solutions")
-
-    return
+    return recent_utils.show_recent_solutions_notification()
+  elseif arg_parts[1] == "Dismiss" then
+    -- LC Dismiss → Dismiss all active notifications
+    local notify_utils = require "LeetNeoCode.utils.ui.notify"
+    return notify_utils.dismiss_all_notifications()
   elseif tonumber(arg_parts[1]) ~= nil then
     return leetcode.problem.open_problem(arg_parts[1])
   else
@@ -112,7 +60,7 @@ function M.complete_command(argLead, cmdLine)
 
   -- If we're completing the first argument after LC
   if #parts <= 1 or (parts[1] == "LC" and #parts == 2 and argLead ~= "") then
-    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList" }
+    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList", "Dismiss" }
   end
 
   -- If we typed "LC Recent " and are completing the second argument
