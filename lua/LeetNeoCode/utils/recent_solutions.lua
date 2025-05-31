@@ -26,7 +26,7 @@ end
 function M.clear_recent_dir()
   local recent_dir = M.get_recent_dir()
   if vim.fn.isdirectory(recent_dir) == 1 then
-    -- Remove all contents
+    -- Remove all contents (symlinks and any files)
     local items = vim.fn.glob(recent_dir .. "/*", false, true)
     for _, item in ipairs(items) do
       vim.fn.delete(item, "rf") -- recursive force delete
@@ -63,25 +63,36 @@ function M.get_recent_solution_dirs()
   return dirs
 end
 
--- Copy a directory recursively
-function M.copy_directory(src, dst)
-  -- Use system cp command for reliable recursive copy
-  local cmd = string.format("cp -r %s %s", vim.fn.shellescape(src), vim.fn.shellescape(dst))
+-- Create a symlink to a directory
+function M.create_symlink(src, dst)
+  -- Use absolute paths for reliable symlinks
+  local abs_src = vim.fn.fnamemodify(src, ":p")
+  local abs_dst = vim.fn.fnamemodify(dst, ":p")
+
+  -- Remove existing symlink/file if it exists
+  if vim.fn.filereadable(abs_dst) == 1 or vim.fn.isdirectory(abs_dst) == 1 then
+    vim.fn.delete(abs_dst, "rf")
+  end
+
+  -- Create symlink using shell command
+  local escaped_src = vim.fn.shellescape(abs_src)
+  local escaped_dst = vim.fn.shellescape(abs_dst)
+  local cmd = string.format("ln -sf %s %s", escaped_src, escaped_dst)
   local result = os.execute(cmd)
 
   if result ~= 0 then
-    vim.notify("Failed to copy directory: " .. src .. " to " .. dst, vim.log.levels.ERROR)
+    vim.notify("Failed to create symlink: " .. abs_src .. " -> " .. abs_dst, vim.log.levels.ERROR)
     return false
   end
 
   return true
 end
 
--- Update the recent solutions directory with N most recent folders
+-- Update the recent solutions directory with N most recent folders (using symlinks)
 function M.update_recent_solutions()
   local count = C.recent_solutions_count or 10
 
-  vim.notify("Updating recent solutions (" .. count .. " most recent)...", vim.log.levels.INFO)
+  vim.notify("Updating recent solutions with symlinks (" .. count .. " most recent)...", vim.log.levels.INFO)
 
   -- Ensure recent directory exists and clear it
   M.ensure_recent_dir()
@@ -91,38 +102,39 @@ function M.update_recent_solutions()
   local recent_dirs = M.get_recent_solution_dirs()
 
   if #recent_dirs == 0 then
-    vim.notify("No solution directories to copy", vim.log.levels.WARN)
+    vim.notify("No solution directories to link", vim.log.levels.WARN)
     return false
   end
 
-  -- Copy the N most recent directories
+  -- Create symlinks to the N most recent directories
   local recent_dir = M.get_recent_dir()
-  local copied_count = 0
+  local linked_count = 0
 
   for i = 1, math.min(count, #recent_dirs) do
     local src_dir = recent_dirs[i]
     local dir_name = vim.fn.fnamemodify(src_dir, ":t") -- get just the directory name
-    local dst_dir = recent_dir .. "/" .. dir_name
+    local dst_path = recent_dir .. "/" .. dir_name
 
-    if M.copy_directory(src_dir, dst_dir) then
-      copied_count = copied_count + 1
+    if M.create_symlink(src_dir, dst_path) then
+      linked_count = linked_count + 1
     else
       break -- Stop on first failure
     end
   end
 
-  if copied_count > 0 then
+  if linked_count > 0 then
     vim.notify(
-      string.format("Successfully copied %d recent solution%s to %s",
-        copied_count,
-        copied_count == 1 and "" or "s",
+      string.format("Successfully created %d symlink%s to recent solution%s in %s",
+        linked_count,
+        linked_count == 1 and "" or "s",
+        linked_count == 1 and "" or "s",
         recent_dir
       ),
       vim.log.levels.INFO
     )
     return true
   else
-    vim.notify("Failed to copy any solutions", vim.log.levels.ERROR)
+    vim.notify("Failed to create any symlinks", vim.log.levels.ERROR)
     return false
   end
 end
