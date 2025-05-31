@@ -66,20 +66,29 @@ function M.write_solution_file(fpath, snippets, problem_data, fold_start, fold_e
   f:write(comment_style.start .. fold_start .. "\n")
 
   -- Add problem metadata to comment with appropriate prefix
-  if problem_data.title and problem_data.difficulty and problem_data.questionId then
-    f:write(
-      comment_style.line_prefix .. "Problem: LC#" .. problem_data.questionId .. " " .. problem_data.title .. "\n"
-    )
-    f:write(comment_style.line_prefix .. "Difficulty: " .. problem_data.difficulty .. "\n")
-  end
+  -- Handle case where some metadata might be missing (graceful fallback)
+  local title = (problem_data and problem_data.title) or "Unknown Problem"
+  local difficulty = (problem_data and problem_data.difficulty) or "Unknown"
+  local question_id = (problem_data and problem_data.questionId) or "?"
+
+  f:write(comment_style.line_prefix .. "Problem: LC#" .. question_id .. " " .. title .. "\n")
+  f:write(comment_style.line_prefix .. "Difficulty: " .. difficulty .. "\n")
 
   -- Add LeetCode tags to comment
-  if problem_data.topicTags then
+  if problem_data and problem_data.topicTags and #problem_data.topicTags > 0 then
     local tag_names = {}
     for _, tag in ipairs(problem_data.topicTags) do
-      table.insert(tag_names, tag.name)
+      if tag and tag.name then
+        table.insert(tag_names, tag.name)
+      end
     end
-    f:write(comment_style.line_prefix .. "LC Tags: " .. table.concat(tag_names, ", ") .. "\n")
+    if #tag_names > 0 then
+      f:write(comment_style.line_prefix .. "LC Tags: " .. table.concat(tag_names, ", ") .. "\n")
+    else
+      f:write(comment_style.line_prefix .. "LC Tags: None\n")
+    end
+  else
+    f:write(comment_style.line_prefix .. "LC Tags: None\n")
   end
 
   -- Add user tags section to comment

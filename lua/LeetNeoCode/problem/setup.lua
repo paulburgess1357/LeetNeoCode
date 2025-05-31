@@ -34,8 +34,7 @@ function M.setup_dependencies(prob_dir)
   end
 end
 
--- Fetch problem data (delegate to fetcher module)
--- Fetch problem data (optionally limited to just code)
+-- Fetch problem data - always fetch metadata, optionally fetch description content
 function M.fetch_problem_data(slug, code_only)
   if not slug then
     return nil, nil
@@ -50,17 +49,28 @@ function M.fetch_problem_data(slug, code_only)
     end
   end
 
-  -- If code_only is true, return empty problem_data
-  if code_only then
-    return { content = "" }, snippets
-  end
-
-  -- Otherwise fetch the full problem data
+  -- Always fetch the metadata for the solution file, but limit content based on code_only
   local problem_data
   do
     local ok, result = pcall(fetcher.fetch_problem_description, slug)
-    problem_data = ok and type(result) == "table" and result or { content = "" }
-    if problem_data.content == "" then
+    if ok and type(result) == "table" then
+      if code_only then
+        -- Keep metadata but remove content for code_only mode
+        problem_data = {
+          content = "", -- Empty content for code_only
+          difficulty = result.difficulty,
+          topicTags = result.topicTags,
+          stats = result.stats,
+          title = result.title,
+          questionId = result.questionId,
+        }
+      else
+        -- Use full result for normal mode
+        problem_data = result
+      end
+    else
+      -- Fallback if fetch fails
+      problem_data = { content = "" }
       vim.notify("Could not fetch description for problem", vim.log.levels.WARN)
     end
   end
