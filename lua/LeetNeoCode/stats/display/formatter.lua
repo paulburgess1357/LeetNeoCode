@@ -2,28 +2,33 @@
 local M = {}
 local C = require "LeetNeoCode.config"
 
--- Collection of motivational coding quotes
+-- Collection of serious motivational quotes - grinding focused
 local MOTIVATIONAL_QUOTES = {
-  "💡 Keep grinding! Every problem solved is progress! 🚀",
-  "🔥 The expert in anything was once a beginner! 💪",
-  "⚡ Code is like humor. When you have to explain it, it's bad! 😄",
-  "🎯 First, solve the problem. Then, write the code! 🧠",
-  "🌟 The best way to learn is by doing! Keep coding! 💻",
-  "🚀 Debugging is twice as hard as writing code! Stay sharp! 🔍",
-  "💎 Clean code always looks like it was written by someone who cares! ✨",
-  "🏆 Programming isn't about what you know; it's about problem solving! 🧩",
-  "⭐ Any fool can write code that a computer can understand! 🤖",
-  "🔮 The future belongs to those who can code today! 🌈",
-  "🎨 Code is poetry written in logic! Express yourself! 📝",
-  "🌊 In programming, the hard part isn't solving problems, it's deciding what problems to solve! 🤔",
-  "🎲 There are only two hard things: cache invalidation and naming things! 😅",
-  "🦾 Talk is cheap. Show me the code! 💬",
-  "🌅 Every great developer you know got there by solving problems they were unqualified to solve! 📈",
-  "🎯 Code never lies, comments sometimes do! Keep it real! 💯",
-  "🚁 Don't comment bad code—rewrite it! Polish your craft! ✨",
-  "🎪 Programming is the art of telling another human what you want the computer to do! 🗣️",
-  "🎭 The best programs are written so that computing machines can perform them quickly! ⚡",
-  "🎸 Simplicity is the ultimate sophistication in code! Keep it elegant! 🎵"
+  "🔥 When you want to succeed as bad as you want to breathe, then you'll find a way! - Eric Thomas",
+  "💪 Champions don't become champions in the ring. They become champions in their training! - Eric Thomas",
+  "⚡ Pain is temporary. Quitting lasts forever. Keep grinding!",
+  "🚀 You can't cheat the grind. It knows how much you've invested!",
+  "💎 The grind never stops. When you're tired, keep going!",
+  "🎯 Success isn't given. It's earned in the gym, on the field, and at the keyboard!",
+  "🔥 Stop looking for shortcuts. The magic happens in the struggle!",
+  "💪 Your why has to be stronger than your excuses! Code through the pain!",
+  "⭐ Comfort is the enemy of greatness. Get uncomfortable with hard problems!",
+  "🌟 When you conquer one fear, it gives you strength to conquer others!",
+  "🔥 You have to want success as much as you want to breathe! No days off!",
+  "🎯 Excuses will always be there for you. Opportunities won't!",
+  "💎 The moment you give up is the moment you let someone else win!",
+  "🚀 Don't cry to quit. You already in pain, you already hurt. Get a reward from it! - Eric Thomas",
+  "⚡ The only thing between you and your goal is the story you tell yourself!",
+  "🔥 Champions don't stay down. They get up, dust off, and code again!",
+  "💪 When it gets hard, that's when champions separate from everyone else!",
+  "🌟 Your dedication to the craft will determine your level of success!",
+  "🎯 Beast mode isn't a mode, it's a lifestyle! Code like your life depends on it!",
+  "💎 While others sleep, champions are grinding! Stay hungry!",
+  "⚡ You can't become legendary without doing legendary things! Push harder!",
+  "🔥 The algorithm doesn't care about your feelings. Neither should you!",
+  "💪 Success is a process, not an event. Trust the process! - Eric Thomas",
+  "🚀 Most people fail because they major in minor things. Focus on what matters!",
+  "⭐ Every master was once a disaster. Keep pushing through!"
 }
 
 -- Get a random motivational quote
@@ -47,9 +52,9 @@ local function create_ascii_stats_bar(easy, medium, hard)
   local lines = {}
   table.insert(lines, "📊 Problem Solving Journey:")
   table.insert(lines, "")
-  table.insert(lines, "┌" .. string.rep("─", max_width + 2) .. "┐")
-  table.insert(lines, "│ " .. string.rep("🟢", easy_width) .. string.rep("🟡", medium_width) .. string.rep("🔴", hard_width) .. " │")
-  table.insert(lines, "└" .. string.rep("─", max_width + 2) .. "┘")
+  table.insert(lines, "+" .. string.rep("-", max_width + 2) .. "+")
+  table.insert(lines, "| " .. string.rep("🟢", easy_width) .. string.rep("🟡", medium_width) .. string.rep("🔴", hard_width) .. " |")
+  table.insert(lines, "+" .. string.rep("-", max_width + 2) .. "+")
   table.insert(lines, string.format("   🟢 Easy: %d   🟡 Medium: %d   🔴 Hard: %d", easy, medium, hard))
 
   return lines
@@ -126,11 +131,11 @@ local function create_difficulty_chart(stats)
   local medium_bar = create_progress_bar(stats.difficulty_distribution.medium, 30, "squares")
   local hard_bar = create_progress_bar(stats.difficulty_distribution.hard, 30, "stars")
 
-  table.insert(chart_lines, string.format("🟢 Easy   │%s│ %d%% (%d)",
+  table.insert(chart_lines, string.format("🟢 Easy   |%s| %d%% (%d)",
     easy_bar, stats.difficulty_distribution.easy, stats.problems.easy.solved))
-  table.insert(chart_lines, string.format("🟡 Medium │%s│ %d%% (%d)",
+  table.insert(chart_lines, string.format("🟡 Medium |%s| %d%% (%d)",
     medium_bar, stats.difficulty_distribution.medium, stats.problems.medium.solved))
-  table.insert(chart_lines, string.format("🔴 Hard   │%s│ %d%% (%d)",
+  table.insert(chart_lines, string.format("🔴 Hard   |%s| %d%% (%d)",
     hard_bar, stats.difficulty_distribution.hard, stats.problems.hard.solved))
 
   return chart_lines
@@ -237,16 +242,16 @@ local function create_achievements_section(stats)
   return lines
 end
 
--- Create summary stats box
+-- Create summary stats box with proper ASCII borders
 local function create_summary_box(stats)
   local lines = {}
 
-  table.insert(lines, "┌─ 📋 Quick Stats ─────────────────────────┐")
-  table.insert(lines, string.format("│ Total Solved: %-8d Submissions: %-8d │", stats.problems.total_solved, stats.problems.total_submissions))
-  table.insert(lines, string.format("│ Easy: %-4d Medium: %-4d Hard: %-4d     │",
+  table.insert(lines, "+- 📋 Quick Stats --------------------------------+")
+  table.insert(lines, string.format("| Total Solved: %-8d Submissions: %-8d |", stats.problems.total_solved, stats.problems.total_submissions))
+  table.insert(lines, string.format("| Easy: %-4d Medium: %-4d Hard: %-4d     |",
     stats.problems.easy.solved, stats.problems.medium.solved, stats.problems.hard.solved))
-  table.insert(lines, string.format("│ Acceptance Rate: %-6d%%                │", stats.acceptance_rate))
-  table.insert(lines, "└─────────────────────────────────────────┘")
+  table.insert(lines, string.format("| Acceptance Rate: %-6d%%                |", stats.acceptance_rate))
+  table.insert(lines, "+---------------------------------------------+")
 
   return lines
 end
@@ -273,7 +278,7 @@ function M.show_stats_notification(username, stats)
     table.insert(lines, string.format("👤 %s", stats.real_name))
   end
 
-  table.insert(lines, string.rep("═", 50))
+  table.insert(lines, string.rep("=", 50))
   table.insert(lines, "")
 
   -- Quick summary box

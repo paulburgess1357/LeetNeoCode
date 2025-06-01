@@ -32,27 +32,53 @@ local function fetch_public_profile_fallback(username)
     medium_solved = 0,
     hard_solved = 0,
     acceptance_rate = 0,
-    ranking = 0
+    ranking = 0,
+    total_submissions = 0
   }
 
-  -- Look for problem counts in the HTML
-  local solved_pattern = '"solvedProblem":(%d+)'
-  local easy_pattern = '"easySolved":(%d+)'
-  local medium_pattern = '"mediumSolved":(%d+)'
-  local hard_pattern = '"hardSolved":(%d+)'
-  local ranking_pattern = '"ranking":(%d+)'
+  -- Look for problem counts in the HTML - try multiple patterns
+  local patterns = {
+    solved = {'"solvedProblem":(%d+)', '"acSubmissionNum":%[.-"count":(%d+)'},
+    easy = {'"easySolved":(%d+)', '"Easy".-"count":(%d+)'},
+    medium = {'"mediumSolved":(%d+)', '"Medium".-"count":(%d+)'},
+    hard = {'"hardSolved":(%d+)', '"Hard".-"count":(%d+)'},
+    ranking = {'"ranking":(%d+)'},
+    submissions = {'"totalSubmissionNum":%[.-"count":(%d+)', '"totalSubmissionNum":%[.-{.-"count":(%d+)'}
+  }
 
-  local total_match = resp:match(solved_pattern)
-  local easy_match = resp:match(easy_pattern)
-  local medium_match = resp:match(medium_pattern)
-  local hard_match = resp:match(hard_pattern)
-  local ranking_match = resp:match(ranking_pattern)
+  -- Try different patterns for each stat
+  for stat, pattern_list in pairs(patterns) do
+    for _, pattern in ipairs(pattern_list) do
+      local match = resp:match(pattern)
+      if match then
+        if stat == "solved" then
+          stats.problems_solved = tonumber(match)
+        elseif stat == "easy" then
+          stats.easy_solved = tonumber(match)
+        elseif stat == "medium" then
+          stats.medium_solved = tonumber(match)
+        elseif stat == "hard" then
+          stats.hard_solved = tonumber(match)
+        elseif stat == "ranking" then
+          stats.ranking = tonumber(match)
+        elseif stat == "submissions" then
+          stats.total_submissions = tonumber(match)
+        end
+        break
+      end
+    end
+  end
 
-  if total_match then stats.problems_solved = tonumber(total_match) end
-  if easy_match then stats.easy_solved = tonumber(easy_match) end
-  if medium_match then stats.medium_solved = tonumber(medium_match) end
-  if hard_match then stats.hard_solved = tonumber(hard_match) end
-  if ranking_match then stats.ranking = tonumber(ranking_match) end
+  -- Calculate acceptance rate more accurately
+  if stats.total_submissions > 0 and stats.problems_solved > 0 then
+    stats.acceptance_rate = math.floor((stats.problems_solved / stats.total_submissions) * 100 + 0.5)
+  else
+    -- Try to extract acceptance rate directly from the page
+    local acc_match = resp:match('"acceptanceRate":"([%d%.]+)%%?"') or resp:match('Acceptance[^%d]*([%d%.]+)%%')
+    if acc_match then
+      stats.acceptance_rate = math.floor(tonumber(acc_match) + 0.5)
+    end
+  end
 
   if stats.problems_solved > 0 then
     return stats, nil
@@ -76,6 +102,11 @@ function M.fetch_user_data(username)
         }
         submitStatsGlobal {
           acSubmissionNum {
+            difficulty
+            count
+            submissions
+          }
+          totalSubmissionNum {
             difficulty
             count
             submissions
