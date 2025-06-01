@@ -12,10 +12,6 @@ function M.execute_command(leetcode, args)
     return leetcode.pull.pull_problems()
   elseif arg_parts[1] == "Copy" then
     return require("LeetNeoCode.utils.leetcode_copy").copy_current_buffer(leetcode.config)
-  elseif arg_parts[1] == "Stats" and arg_parts[2] then
-    -- LC Stats <username> → Show user statistics
-    local stats_module = require "LeetNeoCode.stats"
-    return stats_module.fetch_user_stats(arg_parts[2])
   elseif arg_parts[1] == "Recent" and not arg_parts[2] then
     -- LC Recent (no second argument) → Find and open the most recent solution file
     local file_utils = require "LeetNeoCode.utils.file.operations"
@@ -75,17 +71,12 @@ function M.complete_command(argLead, cmdLine)
 
   -- If we're completing the first argument after LC
   if #parts <= 1 or (parts[1] == "LC" and #parts == 2 and argLead ~= "") then
-    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList", "Dismiss", "Keywords", "Stats" }
+    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList", "Dismiss", "Keywords" }
   end
 
   -- If we typed "LC Recent " and are completing the second argument
   if parts[1] == "LC" and parts[2] == "Recent" and #parts == 3 then
     return { "Store", "List" }
-  end
-
-  -- If we typed "LC Stats " and are completing the username
-  if parts[1] == "LC" and parts[2] == "Stats" and #parts == 3 then
-    return { "paulburgess1357", "username_here" } -- Example usernames
   end
 
   return {}

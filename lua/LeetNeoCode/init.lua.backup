@@ -8,7 +8,6 @@ M.problem = require "LeetNeoCode.problem"
 M.format = require "LeetNeoCode.format"
 M.images = require "LeetNeoCode.images"
 M.utils = require "LeetNeoCode.utils"
-M.stats = require "LeetNeoCode.stats"
 
 -- Keep old reference for backward compatibility
 M.util = {
