@@ -17,6 +17,7 @@ _A distraction‑free way to fetch, read and solve LeetCode problems **inside Ne
 - Per‑problem solution folder with automatic versioning (`Solution_1.cpp`, `Solution_2.cpp`, …)
 - **Zero-padded problem numbering** for clean organization (`LC00001_Two_Sum`, `LC00056_Merge_Intervals`)
 - **Recent solutions management** with configurable quick access to your most worked-on problems
+- **Keyword search functionality** to find solutions by algorithm type, data structure, or any search terms
 - Metadata comment (difficulty, tags, your own tags) folded at the bottom of every file
 - Support for multiple programming languages (C++, Python, Java, JavaScript, Go, and more)
 - Automatic code dependencies setup with appropriate language-specific helpers
@@ -137,6 +138,7 @@ return {
     cache_expiry_days = 14,
     solutions_subdir = "solutions",
     solutions_recent_subdir = "solutions_recent", -- directory for recent solutions
+    solutions_keywords_subdir = "solutions_keywords", -- directory for keyword search results
     images_subdir = "images",
 
     API_URL = "https://leetcode.com/api/problems/all/",
@@ -285,26 +287,60 @@ return {
 
 ## Usage
 
-| Command            | Action                                                                         |
-| ------------------ | ------------------------------------------------------------------------------ |
-| `:LC Pull`         | (re‑)download the full problem list into the cache                             |
-| `:LC <number>`     | Open Problem – if the cache is stale it is refreshed first                     |
-| `:LC Copy`         | Smart Copy: Excludes `includes/imports` and folded comment section from buffer |
-| `:LC Recent`       | Pull the code for your most recent worked on solution                          |
-| `:LC Recent Store` | Update recent solutions directory with N most recent problem folders           |
-| `:LC Recent List`  | Display a list of recent solutions with timestamps                             |
+| Command                               | Action                                                                         |
+| ------------------------------------- | ------------------------------------------------------------------------------ |
+| `:LC Pull`                            | (re‑)download the full problem list into the cache                             |
+| `:LC <number>`                        | Open Problem – if the cache is stale it is refreshed first                     |
+| `:LC Copy`                            | Smart Copy: Excludes `includes/imports` and folded comment section from buffer |
+| `:LC Recent`                          | Pull the code for your most recent worked on solution                          |
+| `:LC Recent Store`                    | Update recent solutions directory with N most recent problem folders           |
+| `:LC Recent List`                     | Display a list of recent solutions with timestamps                             |
+| `:LC Keywords "binary search, graph"` | Search solutions by keywords and create symlinks to matching directories       |
+| `:LC Dismiss`                         | Dismiss all active LeetCode notifications                                      |
+
+### Keyword Search Examples
+
+The keyword search functionality allows you to find solutions by algorithm type, data structure, or any search terms:
+
+```vim
+" Search for graph algorithms
+:LC Keywords "dfs, bfs, graph"
+
+" Search for dynamic programming solutions
+:LC Keywords "dp, dynamic programming, memoization"
+
+" Search for array manipulation techniques
+:LC Keywords "two pointers, sliding window, array"
+
+" Search for tree data structures
+:LC Keywords "binary tree, bst, tree traversal"
+
+" Search for string algorithms
+:LC Keywords "string, substring, palindrome"
+```
+
+**Keyword Search Features:**
+
+- **Case-insensitive search**: Keywords match regardless of case
+- **Multiple keywords**: Separate keywords with commas
+- **Fast search**: Automatically skips hidden files (`.clangd`, `.gitignore`, etc.) for performance
+- **Fresh results**: Clears previous search results before each new search
+- **Symlink creation**: Creates symlinks to matching solution directories in `solutions_keywords/`
+- **Flexible matching**: Stops searching a directory after finding the first matching keyword
 
 ### Alternative Command Formats
 
 All commands support multiple formats for convenience:
 
-| Spaced Commands    | Single-word Commands | Standalone Commands |
-| ------------------ | -------------------- | ------------------- |
-| `:LC Recent`       | `:LC Recent`         | `:LCRecent`         |
-| `:LC Recent Store` | `:LC RecentStore`    | `:LCRecentStore`    |
-| `:LC Recent List`  | `:LC RecentList`     | `:LCRecentList`     |
-| `:LC Pull`         | `:LC Pull`           | `:LCPull`           |
-| `:LC Copy`         | `:LC Copy`           | `:LCCopy`           |
+| Spaced Commands              | Single-word Commands | Standalone Commands |
+| ---------------------------- | -------------------- | ------------------- |
+| `:LC Recent`                 | `:LC Recent`         | `:LCRecent`         |
+| `:LC Recent Store`           | `:LC RecentStore`    | `:LCRecentStore`    |
+| `:LC Recent List`            | `:LC RecentList`     | `:LCRecentList`     |
+| `:LC Keywords "search term"` | `:LC Keywords`       | `:LCKeywords`       |
+| `:LC Pull`                   | `:LC Pull`           | `:LCPull`           |
+| `:LC Copy`                   | `:LC Copy`           | `:LCCopy`           |
+| `:LC Dismiss`                | `:LC Dismiss`        | `:LCDismiss`        |
 
 ### Typical workflow 📚 (no execution, just editing)
 
@@ -315,8 +351,9 @@ All commands support multiple formats for convenience:
 5. Need another attempt? Run `:LC 1` again and you'll get `Solution_2.cpp`
 6. **Manage recent work**: Use `:LC Recent Store` to copy your 10 most recent problems to a separate directory
 7. **Quick access**: Use `:LC Recent List` to see your recent work with timestamps
-8. Grep or Telescope through `solutions/` when you want to revisit old work
-9. Want to view your most recent code? Type `LC Recent` to quickly pull in your most recent, worked on solution.
+8. **Search by keywords**: Use `:LC Keywords "binary search, heap"` to find all solutions that use specific algorithms
+9. Grep or Telescope through `solutions/` when you want to revisit old work
+10. Want to view your most recent code? Type `LC Recent` to quickly pull in your most recent, worked on solution.
 
 ---
 
@@ -338,17 +375,21 @@ All commands support multiple formats for convenience:
 │   └── LC00015_3Sum/
 │       ├── Solution_1.cpp
 │       └── lc_includes.h -> symlink to plugin/dependencies
-└── solutions_recent/
-    ├── LC00056_Merge_Intervals/     # Copy of most recent
-    │   ├── Solution_1.cpp
-    │   └── lc_includes.h
-    ├── LC00001_Two_Sum/             # Copy of 2nd most recent
-    │   ├── Solution_1.cpp
-    │   ├── Solution_2.cpp
-    │   └── lc_includes.h
-    └── LC00015_3Sum/                # Copy of 3rd most recent
-        ├── Solution_1.cpp
-        └── lc_includes.h
+├── solutions_recent/
+│   ├── LC00056_Merge_Intervals/     # Symlink to most recent
+│   │   ├── Solution_1.cpp
+│   │   └── lc_includes.h
+│   ├── LC00001_Two_Sum/             # Symlink to 2nd most recent
+│   │   ├── Solution_1.cpp
+│   │   ├── Solution_2.cpp
+│   │   └── lc_includes.h
+│   └── LC00015_3Sum/                # Symlink to 3rd most recent
+│       ├── Solution_1.cpp
+│       └── lc_includes.h
+└── solutions_keywords/
+    ├── LC00001_Two_Sum/             # Symlink to solution matching "array"
+    ├── LC00015_3Sum/                # Symlink to solution matching "two pointers"
+    └── LC00056_Merge_Intervals/     # Symlink to solution matching "sorting"
 ```
 
 _(Example for C++ – other languages get their own helper files.)_
@@ -359,9 +400,20 @@ The plugin provides a dedicated recent solutions system:
 
 - **Zero-padded numbering**: All problem folders use 5-digit zero-padded format (`LC00001_`, `LC00056_`, etc.) for clean alphabetical sorting
 - **Configurable count**: Set `recent_solutions_count` to control how many recent problems to track (default: 10)
-- **Separate directory**: Recent solutions are copied to `solutions_recent/` without affecting your main solutions
+- **Separate directory**: Recent solutions are symlinked to `solutions_recent/` without affecting your main solutions
 - **Automatic updates**: Use `:LC Recent Store` to refresh the recent directory with your most recently modified problems
 - **Quick overview**: Use `:LC Recent List` to see formatted list with timestamps and problem details
+
+### Keyword Search System
+
+The plugin includes a powerful keyword search system:
+
+- **Algorithm-based searching**: Find solutions by algorithm type (`"binary search"`, `"dfs"`, `"dynamic programming"`)
+- **Data structure filtering**: Search by data structures used (`"heap"`, `"trie"`, `"graph"`)
+- **Multiple keyword support**: Use comma-separated keywords for broader or more specific searches
+- **Performance optimized**: Automatically skips hidden configuration files during search
+- **Symlink-based results**: Creates symlinks in `solutions_keywords/` directory for easy navigation
+- **Fresh results**: Each search clears previous results for clean organization
 
 ---
 
@@ -408,6 +460,7 @@ The plugin supports all LeetCode-offered languages with:
 - **Zero-padded problem numbers**: All directories use format `LC00001_Problem_Name` for consistent sorting
 - **Automatic versioning**: Multiple solution attempts are numbered (`Solution_1.cpp`, `Solution_2.cpp`)
 - **Recent solutions tracking**: Configurable recent solutions directory for quick access to your latest work
+- **Keyword search organization**: Dedicated directory for keyword search results with symlinks to matching solutions
 - **Language-specific dependencies**: Automatic setup of include files, linters, and formatters per language
 
 ---
