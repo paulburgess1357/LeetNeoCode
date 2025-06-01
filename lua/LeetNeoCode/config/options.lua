@@ -23,6 +23,7 @@ local M = {
   notify_wait_timeout = 50, -- ms to keep floating notifier visible
   notify_wait_interval = 10, -- ms polling interval inside vim.wait
   recent_list_notification_timeout = 5000, -- ms for Recent List notification (5 seconds default)
+  stats_notification_timeout = 20000, -- ms for Stats notification (20 seconds default)
 
   -- Window layout ----------------------------------------------------------
   description_split = 0.35, -- fraction of tab width for description
