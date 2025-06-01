@@ -13,6 +13,7 @@ local M = {
   cache_expiry_days = 14,
   solutions_subdir = "solutions",
   solutions_recent_subdir = "solutions_recent",
+  solutions_keywords_subdir = "solutions_keywords",
   recent_solutions_count = 10,
   images_subdir = "images",
 

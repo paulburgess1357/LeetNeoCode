@@ -91,6 +91,24 @@ function M.setup(leetcode)
     desc = "Show recent solutions as notification",
   })
 
+  -- Add the new LCKeyword command
+  register.register_command("LCKeyword", function(opts)
+    local win, buf = register.command_notification "Searching for Keywords..."
+    vim.schedule(function()
+      local keyword_string = opts.args
+      if keyword_string and keyword_string ~= "" then
+        -- Remove quotes if present
+        keyword_string = keyword_string:gsub('^"(.+)"$', "%1"):gsub("^'(.+)'$", "%1")
+        require("LeetNeoCode.utils.keyword_search").search_by_keywords(keyword_string)
+      else
+        vim.notify('Usage: LCKeyword "keyword1, keyword2, ..."', vim.log.levels.WARN)
+      end
+    end)
+  end, {
+    desc = "Search LeetCode solutions by keywords",
+    nargs = "+",
+  })
+
   -- Add the new LCDismiss command
   register.register_command("LCDismiss", function()
     local win, buf = register.command_notification "Dismissing Notifications..."

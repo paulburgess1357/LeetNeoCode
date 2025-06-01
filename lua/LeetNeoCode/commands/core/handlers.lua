@@ -43,6 +43,17 @@ function M.execute_command(leetcode, args)
     -- LC RecentList (backwards compatibility) → Show recent solutions notification
     local recent_utils = require "LeetNeoCode.utils.recent_solutions"
     return recent_utils.show_recent_solutions_notification()
+  elseif arg_parts[1] == "Keyword" then
+    -- LC Keyword "keywords" → Search for keywords
+    local keyword_string = args:match("Keyword%s+(.+)$")
+    if keyword_string then
+      -- Remove quotes if present
+      keyword_string = keyword_string:gsub('^"(.+)"$', "%1"):gsub("^'(.+)'$", "%1")
+      local keyword_utils = require "LeetNeoCode.utils.keyword_search"
+      return keyword_utils.search_by_keywords(keyword_string)
+    else
+      vim.notify('Usage: LC Keyword "keyword1, keyword2, ..."', vim.log.levels.WARN)
+    end
   elseif arg_parts[1] == "Dismiss" then
     -- LC Dismiss → Dismiss all active notifications
     local notify_utils = require "LeetNeoCode.utils.ui.notify"
@@ -60,7 +71,7 @@ function M.complete_command(argLead, cmdLine)
 
   -- If we're completing the first argument after LC
   if #parts <= 1 or (parts[1] == "LC" and #parts == 2 and argLead ~= "") then
-    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList", "Dismiss" }
+    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList", "Dismiss", "Keyword" }
   end
 
   -- If we typed "LC Recent " and are completing the second argument
