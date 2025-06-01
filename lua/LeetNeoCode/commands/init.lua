@@ -91,8 +91,8 @@ function M.setup(leetcode)
     desc = "Show recent solutions as notification",
   })
 
-  -- Add the new LCKeyword command
-  register.register_command("LCKeyword", function(opts)
+  -- Add the new LCKeywords command
+  register.register_command("LCKeywords", function(opts)
     local win, buf = register.command_notification "Searching for Keywords..."
     vim.schedule(function()
       local keyword_string = opts.args
@@ -101,7 +101,7 @@ function M.setup(leetcode)
         keyword_string = keyword_string:gsub('^"(.+)"$', "%1"):gsub("^'(.+)'$", "%1")
         require("LeetNeoCode.utils.keyword_search").search_by_keywords(keyword_string)
       else
-        vim.notify('Usage: LCKeyword "keyword1, keyword2, ..."', vim.log.levels.WARN)
+        vim.notify('Usage: LCKeywords "keyword1, keyword2, ..."', vim.log.levels.WARN)
       end
     end)
   end, {
