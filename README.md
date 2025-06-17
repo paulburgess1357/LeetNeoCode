@@ -391,9 +391,3 @@ The plugin sets up automatic folding:
 ## 📝 License
 
 This project is licensed under the MIT License.
-
-## 🙏 Acknowledgments
-
-- LeetCode for providing the platform and API
-- [image.nvim](https://github.com/3rd/image.nvim) for image rendering capabilities
-- The Neovim community for inspiration and support
