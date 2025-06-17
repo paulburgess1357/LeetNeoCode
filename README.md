@@ -75,26 +75,65 @@ require("LeetNeoCode").setup({
 
   -- Storage Paths
   cache_dir = vim.fn.stdpath("cache") .. "/LeetNeoCode",
+  cache_subdir = "meta",
+  cache_file = "leetcode_cache.json",
   cache_expiry_days = 14,
+  solutions_subdir = "solutions",
+  solutions_recent_subdir = "solutions_recent",
+  solutions_random_subdir = "solutions_random",
+  solutions_keywords_subdir = "solutions_keywords",
   recent_solutions_count = 10,
   random_solutions_count = 10,
+  images_subdir = "images",
+
+  -- API Configuration
+  API_URL = "https://leetcode.com/api/problems/all/",
+
+  -- Notification Settings
+  notify_wait_timeout = 50, -- ms to keep floating notifier visible
+  notify_wait_interval = 10, -- ms polling interval inside vim.wait
+  recent_list_notification_timeout = 5000, -- ms for Recent List notification
 
   -- UI Layout
   description_split = 0.35, -- Fraction of tab width for description
-  enable_custom_wrap = true,
-  custom_wrap_offset = 0.02,
+  enable_custom_wrap = true, -- Enable hard wrapping
+  custom_wrap_offset = 0.02, -- Wrap width offset from description_split
 
   -- Image Settings
   enable_images = true,
-  render_image = true,
-  use_direct_urls = true,
+  render_image = true, -- Set false to disable image rendering
+  use_direct_urls = true, -- Skip local caching, use direct URLs
+  image_render_delay = 100, -- ms delay before rendering
+  image_max_width = nil, -- nil = auto
   image_max_height = 20,
-  image_max_width_pct = 40,
-  image_max_height_pct = 30,
+  image_max_width_pct = 40, -- 40% of window width (0 to disable)
+  image_max_height_pct = 30, -- 30% of window height (0 to disable)
+  image_right_after_separator = true,
+  image_preserve_aspect_ratio = true,
+  image_auto_render_on_win_focus = true,
   notify_on_image_support = true,
 
+  -- Terminal image support detection
+  image_terminals = {
+    { var = "TERM", match = "kitty" }, -- TERM contains "kitty"
+    { var = "KITTY_WINDOW_ID" }, -- presence suffices
+  },
+
+  -- Metadata Options
+  include_problem_metadata = true, -- Include problem metadata
+  include_leetcode_tags = true, -- Include LC tags
+  include_user_tags = true, -- "User Tags:" stub
+  metadata_at_bottom = true, -- Put metadata at file end
+  metadata_comment_style = "multi", -- multiline /*…*/
+
+  -- Code Block Highlighting
+  code_block_start = "⌊", -- Start marker for code blocks
+  code_block_end = "⌋", -- End marker for code blocks
+  code_block_color = "#e6c07a", -- Color for code blocks
+  code_block_style = "italic", -- Style: normal, bold, italic
+
   -- Smart Copy
-  smart_copy = true,
+  smart_copy = false, -- When true, excludes includes and metadata when copying
   smart_copy_color = "#34C759",
 
   -- Folding
@@ -103,11 +142,28 @@ require("LeetNeoCode").setup({
 
   -- Colors (customize syntax highlighting)
   colors = {
+    -- Problem description colors
     problem_title = "#ff7a6c",
     problem_section = "#d8a657",
+    problem_constraints = "#89b482",
+    problem_constraint_num = "#d8a657",
+    problem_followup = "#d8a657",
     problem_example = "#a9b665",
+    problem_bullet = "#d3869b",
+    problem_input = "#d19a66",
+    problem_output = "#98c379",
+    problem_explanation = "#e5c07b",
+    problem_math = "#d3869b",
+    problem_number = "#d8a657",
+    problem_superscript = "#d8a657",
+    problem_variable = "#7daea3",
+    problem_code_block = "#e6c07a",
+
+    -- Metadata colors
     metadata_line = "#d8a657",
     difficulty_line = "#a9b665",
+    tags_line = "#7daea3",
+    user_tags_line = "#e78a4e",
   },
 })
 ```
