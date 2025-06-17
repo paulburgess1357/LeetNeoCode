@@ -130,14 +130,14 @@ function M.setup_fold_settings()
       " Set fold method and markers for all solution files
       autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldmethod=marker
       autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldmarker=]] .. fold_start .. [[,]] .. fold_end .. [[
-      " Close all folds when opening a solution file
+      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldenable
+      " Close all folds when opening a solution file - using a more reliable approach
       autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ normal! zM
       " Hide fold markers to make them less visually distracting
       autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ syntax match Comment /]] .. fold_start .. [[/ conceal
       autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ syntax match Comment /]] .. fold_end .. [[/ conceal
       autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal conceallevel=2
-      " Make sure foldenable is on and folds can be manipulated
-      autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldenable
+      " Make sure folds can be manipulated
       autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldopen=all
       autocmd BufReadPost,BufNewFile ]] .. file_pattern .. [[ setlocal foldclose=all
       " Set a normal-mode mapping to toggle folds

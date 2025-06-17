@@ -26,28 +26,22 @@ function M.open_problem_view(problem_data, snippets, fpath, num, title, slug, co
   if snippets and fpath then
     if code_only then
       -- In code_only mode, directly edit the file in the current window
-      -- (don't create a new split)
       vim.cmd("edit " .. vim.fn.fnameescape(fpath))
       local buf = vim.api.nvim_get_current_buf()
       vim.api.nvim_buf_set_option(buf, "filetype", require("LeetNeoCode.config").default_language)
+
+      -- Set up folding properly for code_only mode
       vim.cmd "setlocal foldmethod=marker"
+      vim.cmd "setlocal foldenable"
 
-      -- Set nofoldenable temporarily to prevent flicker
-      vim.cmd "setlocal nofoldenable"
+      -- Set fold markers
+      local C = require "LeetNeoCode.config"
+      local fold_start = C.fold_marker_start or "▼"
+      local fold_end = C.fold_marker_end or "▲"
+      vim.cmd("setlocal foldmarker=" .. fold_start .. "," .. fold_end)
 
-      -- Defer folding with slightly longer delay
-      vim.defer_fn(function()
-        -- Clear any cached images for this buffer so they re-render
-        for key, _ in pairs(_G.leetcode_image_cache or {}) do
-          if key:match("^" .. buf .. "%-") then
-            _G.leetcode_image_cache[key] = nil
-          end
-        end
-
-        -- Enable folding and close all folds
-        vim.cmd "setlocal foldenable"
-        vim.cmd "normal! zM"
-      end, 10) -- 10ms delay
+      -- Close all folds
+      vim.cmd "normal! zM"
     else
       -- Standard mode: create split for code+description
       M.open_solution_buffer(fpath)

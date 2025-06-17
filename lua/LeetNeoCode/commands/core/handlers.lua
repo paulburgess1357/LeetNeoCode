@@ -58,6 +58,36 @@ function M.execute_command(leetcode, args)
     -- LC Dismiss → Dismiss all active notifications
     local notify_utils = require "LeetNeoCode.utils.ui.notify"
     return notify_utils.dismiss_all_notifications()
+  elseif arg_parts[1] == "FoldClose" then
+    -- LC FoldClose → Close all folds in current buffer
+    vim.cmd "normal! zM"
+    vim.notify("Closed all folds", vim.log.levels.INFO)
+    return
+  elseif arg_parts[1] == "FoldOpen" then
+    -- LC FoldOpen → Open all folds in current buffer
+    vim.cmd "normal! zR"
+    vim.notify("Opened all folds", vim.log.levels.INFO)
+    return
+  elseif arg_parts[1] == "FoldToggle" then
+    -- LC FoldToggle → Toggle fold under cursor
+    vim.cmd "normal! za"
+    vim.notify("Toggled fold", vim.log.levels.INFO)
+    return
+  elseif arg_parts[1] == "Fold" and arg_parts[2] == "Close" then
+    -- LC Fold Close → Close all folds in current buffer (spaced version)
+    vim.cmd "normal! zM"
+    vim.notify("Closed all folds", vim.log.levels.INFO)
+    return
+  elseif arg_parts[1] == "Fold" and arg_parts[2] == "Open" then
+    -- LC Fold Open → Open all folds in current buffer (spaced version)
+    vim.cmd "normal! zR"
+    vim.notify("Opened all folds", vim.log.levels.INFO)
+    return
+  elseif arg_parts[1] == "Fold" and arg_parts[2] == "Toggle" then
+    -- LC Fold Toggle → Toggle fold under cursor (spaced version)
+    vim.cmd "normal! za"
+    vim.notify("Toggled fold", vim.log.levels.INFO)
+    return
   elseif tonumber(arg_parts[1]) ~= nil then
     return leetcode.problem.open_problem(arg_parts[1])
   else
@@ -65,18 +95,23 @@ function M.execute_command(leetcode, args)
   end
 end
 
--- Update the tab completion function to include the new commands with better completion
+-- Update the tab completion function to include the new fold commands
 function M.complete_command(argLead, cmdLine)
   local parts = vim.split(vim.fn.trim(cmdLine), "%s+")
 
   -- If we're completing the first argument after LC
   if #parts <= 1 or (parts[1] == "LC" and #parts == 2 and argLead ~= "") then
-    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList", "Dismiss", "Keywords" }
+    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList", "Dismiss", "Keywords", "FoldClose", "FoldOpen", "FoldToggle", "Fold" }
   end
 
   -- If we typed "LC Recent " and are completing the second argument
   if parts[1] == "LC" and parts[2] == "Recent" and #parts == 3 then
     return { "Store", "List" }
+  end
+
+  -- If we typed "LC Fold " and are completing the second argument
+  if parts[1] == "LC" and parts[2] == "Fold" and #parts == 3 then
+    return { "Close", "Open", "Toggle" }
   end
 
   return {}

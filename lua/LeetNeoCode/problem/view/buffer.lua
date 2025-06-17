@@ -9,24 +9,18 @@ function M.open_solution_buffer(fpath)
   vim.cmd("vsplit " .. vim.fn.fnameescape(fpath))
   local buf = vim.api.nvim_get_current_buf()
   vim.api.nvim_buf_set_option(buf, "filetype", C.default_language)
+
+  -- Set up folding immediately
   vim.cmd "setlocal foldmethod=marker"
+  vim.cmd "setlocal foldenable"
 
-  -- Set nofoldenable temporarily to prevent flicker
-  vim.cmd "setlocal nofoldenable"
+  -- Set fold markers
+  local fold_start = C.fold_marker_start or "▼"
+  local fold_end = C.fold_marker_end or "▲"
+  vim.cmd("setlocal foldmarker=" .. fold_start .. "," .. fold_end)
 
-  -- Defer folding with slightly longer delay
-  vim.defer_fn(function()
-    -- Clear any cached images for this buffer so they re-render
-    for key, _ in pairs(_G.leetcode_image_cache or {}) do
-      if key:match("^" .. buf .. "%-") then
-        _G.leetcode_image_cache[key] = nil
-      end
-    end
-
-    -- Enable folding and close all folds
-    vim.cmd "setlocal foldenable"
-    vim.cmd "normal! zM"
-  end, 10) -- 10ms delay
+  -- Close all folds immediately
+  vim.cmd "normal! zM"
 
   return buf
 end
