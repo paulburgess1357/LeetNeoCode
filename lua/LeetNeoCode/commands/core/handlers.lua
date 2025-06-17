@@ -43,6 +43,14 @@ function M.execute_command(leetcode, args)
     -- LC RecentList (backwards compatibility) → Show recent solutions notification
     local recent_utils = require "LeetNeoCode.utils.recent_solutions"
     return recent_utils.show_recent_solutions_notification()
+  elseif arg_parts[1] == "Random" and arg_parts[2] == "Store" then
+    -- LC Random Store → Update random solutions
+    local random_utils = require "LeetNeoCode.utils.random_solutions"
+    return random_utils.update_random_solutions()
+  elseif arg_parts[1] == "RandomStore" then
+    -- LC RandomStore (backwards compatibility) → Update random solutions
+    local random_utils = require "LeetNeoCode.utils.random_solutions"
+    return random_utils.update_random_solutions()
   elseif arg_parts[1] == "Keywords" then
     -- LC Keywords "keywords" → Search for keywords
     local keyword_string = args:match("Keywords%s+(.+)$")
@@ -95,18 +103,23 @@ function M.execute_command(leetcode, args)
   end
 end
 
--- Update the tab completion function to include the new fold commands
+-- Update the tab completion function to include the new commands
 function M.complete_command(argLead, cmdLine)
   local parts = vim.split(vim.fn.trim(cmdLine), "%s+")
 
   -- If we're completing the first argument after LC
   if #parts <= 1 or (parts[1] == "LC" and #parts == 2 and argLead ~= "") then
-    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList", "Dismiss", "Keywords", "FoldClose", "FoldOpen", "FoldToggle", "Fold" }
+    return { "Pull", "Copy", "Recent", "RecentStore", "RecentList", "Random", "RandomStore", "Dismiss", "Keywords", "FoldClose", "FoldOpen", "FoldToggle", "Fold" }
   end
 
   -- If we typed "LC Recent " and are completing the second argument
   if parts[1] == "LC" and parts[2] == "Recent" and #parts == 3 then
     return { "Store", "List" }
+  end
+
+  -- If we typed "LC Random " and are completing the second argument
+  if parts[1] == "LC" and parts[2] == "Random" and #parts == 3 then
+    return { "Store" }
   end
 
   -- If we typed "LC Fold " and are completing the second argument

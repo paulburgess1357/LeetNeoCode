@@ -81,6 +81,16 @@ function M.setup(leetcode)
     desc = "Update recent solutions directory with N most recent problems",
   })
 
+  -- Add the new LCRandomStore command
+  register.register_command("LCRandomStore", function()
+    local win, buf = register.command_notification "Updating Random Solutions..."
+    vim.schedule(function()
+      require("LeetNeoCode.utils.random_solutions").update_random_solutions()
+    end)
+  end, {
+    desc = "Update random solutions directory with N random problems",
+  })
+
   -- Add the new LCRecentList command
   register.register_command("LCRecentList", function()
     local win, buf = register.command_notification "Showing Recent Solutions..."

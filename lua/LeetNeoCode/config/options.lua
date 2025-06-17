@@ -13,8 +13,10 @@ local M = {
   cache_expiry_days = 14,
   solutions_subdir = "solutions",
   solutions_recent_subdir = "solutions_recent",
+  solutions_random_subdir = "solutions_random",
   solutions_keywords_subdir = "solutions_keywords",
   recent_solutions_count = 10,
+  random_solutions_count = 10,
   images_subdir = "images",
 
   API_URL = "https://leetcode.com/api/problems/all/",

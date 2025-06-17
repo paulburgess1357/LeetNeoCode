@@ -31,14 +31,19 @@ function M.ensure_cache_dirs()
       vim.fn.mkdir(img_dir, "p")
   end
   -- recent solutions (always create this)
+  local recent_dir = options.cache_dir .. "/" .. options.solutions_recent_subdir
+  if vim.fn.isdirectory(recent_dir) == 0 then
+    vim.fn.mkdir(recent_dir, "p")
+  end
+  -- random solutions (always create this)
+  local random_dir = options.cache_dir .. "/" .. options.solutions_random_subdir
+  if vim.fn.isdirectory(random_dir) == 0 then
+    vim.fn.mkdir(random_dir, "p")
+  end
   -- keyword search directory (always create this)
   local keyword_dir = options.cache_dir .. "/" .. "solutions_keywords"
   if vim.fn.isdirectory(keyword_dir) == 0 then
     vim.fn.mkdir(keyword_dir, "p")
-  end
-  local recent_dir = options.cache_dir .. "/" .. options.solutions_recent_subdir
-  if vim.fn.isdirectory(recent_dir) == 0 then
-    vim.fn.mkdir(recent_dir, "p")
     end
   end
 end

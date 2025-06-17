@@ -15,6 +15,7 @@ M.clipboard = require "LeetNeoCode.utils.clipboard"
 -- LeetCode-specific utilities
 M.leetcode_copy = require "LeetNeoCode.utils.leetcode_copy"
 M.recent_solutions = require "LeetNeoCode.utils.recent_solutions"
+M.random_solutions = require "LeetNeoCode.utils.random_solutions"
 M.keyword_search = require "LeetNeoCode.utils.keyword_search"
 
 return M
