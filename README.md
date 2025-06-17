@@ -1,476 +1,343 @@
 # LeetNeoCode
 
-_A distraction‑free way to fetch, read and solve LeetCode problems **inside Neovim**._
+A comprehensive Neovim plugin for LeetCode problem solving with advanced features including inline images, smart copy functionality, and extensive customization options.
 
-![Leetcode Example](screenshots/screenshot1.png)
+## ✨ Features
 
-> **Note** – This plugin **does not compile or run your code** against LeetCode's judge.
-> If you need in‑editor execution and submission, check out
-> [`kawre/leetcode.nvim`](https://github.com/kawre/leetcode.nvim).
+- **📚 Problem Management**: Fetch and organize LeetCode problems with metadata
+- **🖼️ Inline Images**: Display problem diagrams directly in Neovim (with image.nvim support)
+- **🧩 Smart Copy**: Intelligent copying that excludes headers and metadata
+- **📁 Solution Organization**: Automatic file organization with dependency management
+- **🔍 Advanced Search**: Search solutions by keywords, recent activity, or random selection
+- **🎨 Syntax Highlighting**: Custom highlighting for problem descriptions and code
+- **📋 Fold Management**: Organized code folding with metadata sections
+- **🔧 Multi-Language Support**: Support for 8+ programming languages
 
----
+## 📋 Requirements
 
-## Features
+- Neovim 0.8+
+- `curl` for API requests
+- Optional: [image.nvim](https://github.com/3rd/image.nvim) for inline image support
+- Optional: Kitty terminal or other image-capable terminal
 
-- Open a problem description side‑by‑side with starter code
-- Highlighted, nicely wrapped markdown with optional inline images<sup>†</sup>
-- Per‑problem solution folder with automatic versioning (`Solution_1.cpp`, `Solution_2.cpp`, …)
-- **Zero-padded problem numbering** for clean organization (`LC00001_Two_Sum`, `LC00056_Merge_Intervals`)
-- **Recent solutions management** with configurable quick access to your most worked-on problems
-- **Keyword search functionality** to find solutions by algorithm type, data structure, or any search terms
-- Metadata comment (difficulty, tags, your own tags) folded at the bottom of every file
-- Support for multiple programming languages (C++, Python, Java, JavaScript, Go, and more)
-- Automatic code dependencies setup with appropriate language-specific helpers
-- Customizable UI with configurable colors, formatting, and display options
+## 📦 Installation
 
-<sup>†</sup> Images render only if you use a _Kitty‑protocol_ terminal and have [`image.nvim`](https://github.com/3rd/image.nvim) installed; otherwise we show lightweight placeholders.
-
----
-
-## Dependencies
-
-### Required
-
-- **Neovim ≥ 0.11** – [neovim.io](https://neovim.io)
-- **curl** in your `$PATH` – Usually pre-installed on most systems
-
-### Image Support (optional)
-
-For inline images in problem descriptions, you'll need:
-
-1. **[image.nvim](https://github.com/3rd/image.nvim)** – Neovim plugin for displaying images
-2. **A terminal with [Kitty graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/) support:**
-   - [Kitty](https://sw.kovidgoyal.net/kitty/) (recommended)
-   - [WezTerm](https://wezfurlong.org/wezterm/)
-   - [iTerm2](https://iterm2.com/) (macOS only)
-3. **Backend dependencies:**
-   - **[ImageMagick](https://imagemagick.org/)** + dev library – `sudo apt install imagemagick libmagickwand-dev`
-   - **[LuaRocks](https://luarocks.org/)** – `sudo apt install luarocks`
-   - **[magick](https://github.com/leafo/magick)** Lua rock – `luarocks --local --lua-version=5.1 install magick`
-
-Image support is optional. If your terminal does not support images or you don't want them, a text placeholder will be used instead.
-
-### Automated Setup (Optional)
-
-The plugin includes scripts to automate dependency installation. These helper scripts will guide you through installing all necessary components for image support:
-
-```bash
-# From your plugin directory:
-cd installation
-./install_image_support.sh
-```
-
-This interactive installer will:
-
-- Check for and optionally install Kitty terminal
-- Offer to install a basic Kitty configuration
-- Install ImageMagick, libmagickwand-dev, LuaRocks, and the magick Lua rock
-- Configure your shell environment with the necessary LuaRocks paths
-
-If you prefer to install dependencies manually, you can use the individual commands listed in the Image Support section above.
-
----
-
-## Installation
-
-### lazy.nvim
+### Using [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 {
-  "paulburgess1357/LeetNeoCode",
+  "your-username/LeetNeoCode",
   dependencies = {
-    -- Optional: only needed if you want inline images
-    { "3rd/image.nvim", optional = true },
+    "3rd/image.nvim", -- Optional: for inline images
   },
   config = function()
-    require("LeetNeoCode").setup()
+    require("LeetNeoCode").setup({
+      -- Configuration options
+    })
   end,
 }
 ```
 
-### packer.nvim
+### Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
 
 ```lua
-use({
-  "paulburgess1357/LeetNeoCode",
+use {
+  "your-username/LeetNeoCode",
   requires = {
-    -- Optional: only needed if you want inline images
-    { "3rd/image.nvim", opt = true },
+    "3rd/image.nvim", -- Optional
   },
   config = function()
     require("LeetNeoCode").setup()
-  end,
+  end
+}
+```
+
+## ⚙️ Configuration
+
+### Basic Setup
+
+```lua
+require("LeetNeoCode").setup({
+  default_language = "cpp",
+  code_only = false,
+  enable_images = true,
+  smart_copy = true,
 })
 ```
 
----
-
-## Configuration
-
-All options (with defaults) – copy the block and tweak what you need:
+### Advanced Configuration
 
 ```lua
+require("LeetNeoCode").setup({
+  -- Core Settings
+  default_language = "cpp", -- cpp, python, java, javascript, go, rust, swift, csharp
+  code_only = false, -- When true, only show code without description
 
-return {
-  "paulburgess1357/LeetNeoCode",
-  enabled = true,
-  branch = "master",
+  -- Storage Paths
+  cache_dir = vim.fn.stdpath("cache") .. "/LeetNeoCode",
+  cache_expiry_days = 14,
+  recent_solutions_count = 10,
+  random_solutions_count = 10,
 
-  -- only load when the user runs :LC
-  cmd = { "LC" },
+  -- UI Layout
+  description_split = 0.35, -- Fraction of tab width for description
+  enable_custom_wrap = true,
+  custom_wrap_offset = 0.02,
 
-  -- mark image.nvim optional so it's only loaded if images are enabled
-  dependencies = {
-    { "3rd/image.nvim", optional = false },
+  -- Image Settings
+  enable_images = true,
+  render_image = true,
+  use_direct_urls = true,
+  image_max_height = 20,
+  image_max_width_pct = 40,
+  image_max_height_pct = 30,
+  notify_on_image_support = true,
+
+  -- Smart Copy
+  smart_copy = true,
+  smart_copy_color = "#34C759",
+
+  -- Folding
+  fold_marker_start = "▼",
+  fold_marker_end = "▲",
+
+  -- Colors (customize syntax highlighting)
+  colors = {
+    problem_title = "#ff7a6c",
+    problem_section = "#d8a657",
+    problem_example = "#a9b665",
+    metadata_line = "#d8a657",
+    difficulty_line = "#a9b665",
   },
+})
+```
 
-  opts = {
-    -------------------------------------------------------------------------
-    -- Core settings
-    -------------------------------------------------------------------------
-    default_language = "cpp", -- valid values: cpp, python, java, javascript, go, rust, swift, csharp
-    code_only = false, -- when true, only display code.  When false, show both description and code.
+## 🚀 Commands
 
-    -- Storage paths ----------------------------------------------------------
-    cache_dir = vim.fn.stdpath("cache") .. "/LeetNeoCode",
-    cache_subdir = "meta",
-    cache_file = "leetcode_cache.json",
-    cache_expiry_days = 14,
-    solutions_subdir = "solutions",
-    solutions_recent_subdir = "solutions_recent", -- directory for recent solutions
-    solutions_keywords_subdir = "solutions_keywords", -- directory for keyword search results
-    images_subdir = "images",
+### Core Commands
 
-    API_URL = "https://leetcode.com/api/problems/all/",
+| Command        | Description                              |
+| -------------- | ---------------------------------------- |
+| `:LC Pull`     | Fetch and cache all LeetCode problems    |
+| `:LC <number>` | Open problem by number (e.g., `:LC 1`)   |
+| `:LC Copy`     | Copy current buffer with smart filtering |
 
-    -------------------------------------------------------------------------
-    -- Recent Solutions Management
-    -------------------------------------------------------------------------
-    recent_solutions_count = 10, -- number of recent solutions to keep in recent directory
+### Solution Management
 
-    -------------------------------------------------------------------------
-    -- Notification timing
-    -------------------------------------------------------------------------
-    notify_wait_timeout = 50, -- ms to keep notifier visible
-    notify_wait_interval = 10, -- ms polling interval inside vim.wait
+| Command            | Description                        |
+| ------------------ | ---------------------------------- |
+| `:LC Recent`       | Open most recent solution file     |
+| `:LC Recent Store` | Update recent solutions directory  |
+| `:LC Recent List`  | Show recent solutions notification |
+| `:LC Random Store` | Update random solutions directory  |
 
-    -------------------------------------------------------------------------
-    -- Window layout
-    -------------------------------------------------------------------------
-    description_split = 0.35,
+### Search & Discovery
 
-    -------------------------------------------------------------------------
-    -- Hard‐wrap options
-    -------------------------------------------------------------------------
-    enable_custom_wrap = true,
-    custom_wrap_offset = 0.02,
+| Command                             | Description                  |
+| ----------------------------------- | ---------------------------- |
+| `:LC Keywords "keyword1, keyword2"` | Search solutions by keywords |
 
-    -------------------------------------------------------------------------
-    -- Metadata toggles
-    -------------------------------------------------------------------------
-    include_problem_metadata = true,
-    include_leetcode_tags = true,
-    include_user_tags = true,
-    metadata_at_bottom = true,
-    metadata_comment_style = "multi", -- "multi" or "single"
+### Fold Management
 
-    -------------------------------------------------------------------------
-    -- Color palette
-    -------------------------------------------------------------------------
-    colors = {                -- change any of these to suit your colorscheme
-      problem_title           = "#ff7a6c",
-      problem_section         = "#d8a657",
-      problem_constraints     = "#89b482",
-      problem_constraint_num  = "#d8a657",
-      problem_followup        = "#d8a657",
-      problem_example         = "#a9b665",
-      problem_bullet          = "#d3869b",
-      problem_input           = "#d19a66",
-      problem_output          = "#98c379",
-      problem_explanation     = "#e5c07b",
-      problem_math            = "#d3869b",
-      problem_number          = "#d8a657",
-      problem_superscript     = "#d8a657",
-      problem_variable        = "#7daea3",
-      problem_code_block      = "#e6c07a",
+| Command           | Description                       |
+| ----------------- | --------------------------------- |
+| `:LC Fold Open`   | Open all folds in current buffer  |
+| `:LC Fold Close`  | Close all folds in current buffer |
+| `:LC Fold Toggle` | Toggle fold under cursor          |
 
-      metadata_line           = "#d8a657",
-      difficulty_line         = "#a9b665",
-      tags_line               = "#7daea3",
-      user_tags_line          = "#e78a4e",
-    },
-    -------------------------------------------------------------------------
-    -- Image handling
-    -------------------------------------------------------------------------
-    enable_images = true,
-    use_direct_urls = true,
-    image_render_delay = 100,
+### Utility Commands
 
-    -- Fixed size options (set to nil to use percentages instead)
-    image_max_width = nil,
-    image_max_height = nil,
+| Command       | Description                      |
+| ------------- | -------------------------------- |
+| `:LC Dismiss` | Dismiss all active notifications |
 
-    -- Percentage-based sizing (percentage of window dimensions)
-    image_max_width_pct = 40, -- 80% of window width
-    image_max_height_pct = 30, -- 60% of window height
+> **Note**: No-space versions of commands (e.g., `:LCPull`, `:LCCopy`, `:LCRecent`) are also available for convenience.
 
-    image_right_after_separator = true,
-    image_preserve_aspect_ratio = true,
-    image_auto_render_on_win_focus = true,
+## 📖 Usage Examples
 
-    -- which terminals to probe for inline‐image support
-    image_terminals = {
-      { var = "TERM", match = "kitty" },
-      { var = "KITTY_WINDOW_ID" },
-    },
+### Opening Problems
 
-    -- whether to show a one‐time popup about image support at startup
-    notify_on_image_support = true,
+```vim
+" Fetch all problems (do this first)
+:LC Pull
 
-    -------------------------------------------------------------------------
-    -- Code‐block markers & style
-    -------------------------------------------------------------------------
-    code_block_start = "{",
-    code_block_end = "}",
-    code_block_color = theme_config.leetcode.problem.code_block, -- Use the same code block color
-    code_block_style = "italic",
+" Open Two Sum problem
+:LC 1
 
-    ---------------------------------------------------------------------------
-    -- Misc
-    ---------------------------------------------------------------------------
-    smart_copy = true, -- When true, excludes includes and metadata when copying
-    smart_copy_color = "#34C759",
+" Open Add Two Numbers problem
+:LC 2
+```
 
-  config = function(_, opts)
-    -----------------------------------------------------------------------
-    -- if images are enabled, configure image.nvim (Kitty backend)
-    -----------------------------------------------------------------------
-    if opts.enable_images then
-      local ok, img = pcall(require, "image")
-      if ok then
-        img.setup({
-          backend = "kitty",
-          processor = "magick_cli", -- Add processor for better image handling
-          max_width = opts.image_max_width,
-          max_height = opts.image_max_height,
-          max_width_window_percentage = opts.image_max_width_pct,
-          max_height_window_percentage = opts.image_max_height_pct,
-          integrations = { markdown = { enabled = false } },
-        })
-      end
-    end
+### Managing Solutions
 
-    -----------------------------------------------------------------------
-    -- initialize LeetNeoCode with all options
-    -----------------------------------------------------------------------
-    require("LeetNeoCode").setup(opts)
-  end,
+```vim
+" Open your most recent solution
+:LC Recent
+
+" Update recent solutions directory with 10 most recent
+:LC Recent Store
+
+" Show list of recent solutions
+:LC Recent List
+
+" Search for solutions containing specific keywords
+:LC Keywords "binary search, tree"
+```
+
+### Working with Code
+
+The plugin automatically sets up:
+
+- **Language-specific templates** with imports and boilerplate
+- **Dependency files** (headers, configs) via symlinks
+- **Fold markers** for organizing code sections
+- **Smart copy functionality** (if enabled)
+
+## 🗂️ File Organization
+
+The plugin organizes files in a structured format:
+
+```
+~/.cache/nvim/LeetNeoCode/
+├── meta/
+│   └── leetcode_cache.json        # Problem metadata
+├── solutions/
+│   ├── LC00001_Two_Sum/           # Zero-padded problem dirs
+│   │   ├── Solution_1.cpp
+│   │   ├── lc_includes.h          # Language dependencies
+│   │   └── .clangd
+│   └── LC00002_Add_Two_Numbers/
+├── solutions_recent/              # Symlinks to recent solutions
+├── solutions_random/              # Symlinks to random solutions
+├── solutions_keywords/            # Keyword search results
+└── images/                        # Cached problem images
+```
+
+## 🎨 Customization
+
+### Language Support
+
+Supported languages with full dependency management:
+
+- **C++** (`.cpp`) - includes, clang configs
+- **Python** (`.py`) - imports, pyproject.toml
+- **Java** (`.java`) - imports, checkstyle
+- **JavaScript** (`.js`) - configs, tsconfig
+- **Go** (`.go`) - imports, golangci
+- **Rust** (`.rs`) - mods, rustfmt
+- **Swift** (`.swift`) - imports, swiftlint
+- **C#** (`.cs`) - using statements, editorconfig
+
+### Custom Key Mappings
+
+```lua
+-- Example custom mappings
+vim.keymap.set('n', '<leader>lp', ':LC Pull<CR>', { desc = 'Pull LeetCode problems' })
+vim.keymap.set('n', '<leader>lr', ':LC Recent<CR>', { desc = 'Open recent solution' })
+vim.keymap.set('n', '<leader>lc', ':LC Copy<CR>', { desc = 'Smart copy solution' })
+```
+
+### Smart Copy Features
+
+When `smart_copy = true`, the plugin:
+
+- Automatically removes language headers/imports
+- Excludes metadata comments from copied content
+- Provides visual feedback with highlighting
+- Works with all yank operations (`y`, `yy`, `Y`)
+- Supports both visual and normal mode copying
+
+## 🖼️ Image Support
+
+### Terminal Compatibility
+
+The plugin automatically detects image-capable terminals:
+
+- **Kitty** - Full support
+- **iTerm2** - Experimental support
+- Others - Text placeholders
+
+### Image Configuration
+
+```lua
+{
+  enable_images = true,
+  image_max_height = 20,
+  image_max_width_pct = 40,
+  image_max_height_pct = 30,
+  use_direct_urls = true, -- Skip local caching
 }
 ```
 
-### Language identifier
-
-`default_language` accepts the LeetCode _slug_ for the language you want your starter code in:
-
-| Value          | Language        | File extension |
-| -------------- | --------------- | -------------- |
-| `"cpp"`        | C++17/20/23     | `.cpp`         |
-| `"python"`     | Python 3        | `.py`          |
-| `"java"`       | Java 17         | `.java`        |
-| `"javascript"` | ECMAScript 2021 | `.js`          |
-| `"go"`         | Go 1.20         | `.go`          |
-| `"rust"`       | Rust            | `.rs`          |
-| `"swift"`      | Swift           | `.swift`       |
-| `"csharp"`     | C#              | `.cs`          |
-
----
-
-## Usage
-
-| Command                               | Action                                                                         |
-| ------------------------------------- | ------------------------------------------------------------------------------ |
-| `:LC Pull`                            | (re‑)download the full problem list into the cache                             |
-| `:LC <number>`                        | Open Problem – if the cache is stale it is refreshed first                     |
-| `:LC Copy`                            | Smart Copy: Excludes `includes/imports` and folded comment section from buffer |
-| `:LC Recent`                          | Pull the code for your most recent worked on solution                          |
-| `:LC Recent Store`                    | Update recent solutions directory with N most recent problem folders           |
-| `:LC Recent List`                     | Display a list of recent solutions with timestamps                             |
-| `:LC Keywords "binary search, graph"` | Search solutions by keywords and create symlinks to matching directories       |
-| `:LC Dismiss`                         | Dismiss all active LeetCode notifications                                      |
-
-### Keyword Search Examples
-
-The keyword search functionality allows you to find solutions by algorithm type, data structure, or any search terms:
-
-```vim
-" Search for graph algorithms
-:LC Keywords "dfs, bfs, graph"
-
-" Search for dynamic programming solutions
-:LC Keywords "dp, dynamic programming, memoization"
-
-" Search for array manipulation techniques
-:LC Keywords "two pointers, sliding window, array"
-
-" Search for tree data structures
-:LC Keywords "binary tree, bst, tree traversal"
-
-" Search for string algorithms
-:LC Keywords "string, substring, palindrome"
-```
-
-**Keyword Search Features:**
-
-- **Case-insensitive search**: Keywords match regardless of case
-- **Multiple keywords**: Separate keywords with commas
-- **Fast search**: Automatically skips hidden files (`.clangd`, `.gitignore`, etc.) for performance
-- **Fresh results**: Clears previous search results before each new search
-- **Symlink creation**: Creates symlinks to matching solution directories in `solutions_keywords/`
-- **Flexible matching**: Stops searching a directory after finding the first matching keyword
-
-### Alternative Command Formats
-
-All commands support multiple formats for convenience:
-
-| Spaced Commands              | Single-word Commands | Standalone Commands |
-| ---------------------------- | -------------------- | ------------------- |
-| `:LC Recent`                 | `:LC Recent`         | `:LCRecent`         |
-| `:LC Recent Store`           | `:LC RecentStore`    | `:LCRecentStore`    |
-| `:LC Recent List`            | `:LC RecentList`     | `:LCRecentList`     |
-| `:LC Keywords "search term"` | `:LC Keywords`       | `:LCKeywords`       |
-| `:LC Pull`                   | `:LC Pull`           | `:LCPull`           |
-| `:LC Copy`                   | `:LC Copy`           | `:LCCopy`           |
-| `:LC Dismiss`                | `:LC Dismiss`        | `:LCDismiss`        |
-
-### Typical workflow 📚 (no execution, just editing)
-
-1. `:LC Pull` – fetch metadata (run again occasionally to refresh)
-2. `:LC 1` – opens "**Two Sum**" in a new tab: left‑pane description, right‑pane `Solution_1.cpp`
-3. Solve the problem locally.
-4. `LC Copy` (or yank the full file if `smart_copy = true`); Paste into the Leetcode code section.
-5. Need another attempt? Run `:LC 1` again and you'll get `Solution_2.cpp`
-6. **Manage recent work**: Use `:LC Recent Store` to copy your 10 most recent problems to a separate directory
-7. **Quick access**: Use `:LC Recent List` to see your recent work with timestamps
-8. **Search by keywords**: Use `:LC Keywords "binary search, heap"` to find all solutions that use specific algorithms
-9. Grep or Telescope through `solutions/` when you want to revisit old work
-10. Want to view your most recent code? Type `LC Recent` to quickly pull in your most recent, worked on solution.
-
----
-
-## File Layout
-
-```
-~/.cache/LeetNeoCode/
-├── meta/
-│   └── leetcode_cache.json
-├── solutions/
-│   ├── LC00001_Two_Sum/
-│   │   ├── Solution_1.cpp
-│   │   ├── Solution_2.cpp
-│   │   ├── lc_includes.h -> symlink to plugin/dependencies
-│   │   └── .clang-format
-│   ├── LC00056_Merge_Intervals/
-│   │   ├── Solution_1.cpp
-│   │   └── lc_includes.h -> symlink to plugin/dependencies
-│   └── LC00015_3Sum/
-│       ├── Solution_1.cpp
-│       └── lc_includes.h -> symlink to plugin/dependencies
-├── solutions_recent/
-│   ├── LC00056_Merge_Intervals/     # Symlink to most recent
-│   │   ├── Solution_1.cpp
-│   │   └── lc_includes.h
-│   ├── LC00001_Two_Sum/             # Symlink to 2nd most recent
-│   │   ├── Solution_1.cpp
-│   │   ├── Solution_2.cpp
-│   │   └── lc_includes.h
-│   └── LC00015_3Sum/                # Symlink to 3rd most recent
-│       ├── Solution_1.cpp
-│       └── lc_includes.h
-└── solutions_keywords/
-    ├── LC00001_Two_Sum/             # Symlink to solution matching "array"
-    ├── LC00015_3Sum/                # Symlink to solution matching "two pointers"
-    └── LC00056_Merge_Intervals/     # Symlink to solution matching "sorting"
-```
-
-_(Example for C++ – other languages get their own helper files.)_
+## 🔧 Advanced Features
 
 ### Recent Solutions Management
 
-The plugin provides a dedicated recent solutions system:
+```vim
+" Update recent solutions (creates symlinks)
+:LC Recent Store
 
-- **Zero-padded numbering**: All problem folders use 5-digit zero-padded format (`LC00001_`, `LC00056_`, etc.) for clean alphabetical sorting
-- **Configurable count**: Set `recent_solutions_count` to control how many recent problems to track (default: 10)
-- **Separate directory**: Recent solutions are symlinked to `solutions_recent/` without affecting your main solutions
-- **Automatic updates**: Use `:LC Recent Store` to refresh the recent directory with your most recently modified problems
-- **Quick overview**: Use `:LC Recent List` to see formatted list with timestamps and problem details
+" View recent solutions list
+:LC Recent List
 
-### Keyword Search System
+" Open most recent solution directly
+:LC Recent
+```
 
-The plugin includes a powerful keyword search system:
+### Keyword Search
 
-- **Algorithm-based searching**: Find solutions by algorithm type (`"binary search"`, `"dfs"`, `"dynamic programming"`)
-- **Data structure filtering**: Search by data structures used (`"heap"`, `"trie"`, `"graph"`)
-- **Multiple keyword support**: Use comma-separated keywords for broader or more specific searches
-- **Performance optimized**: Automatically skips hidden configuration files during search
-- **Symlink-based results**: Creates symlinks in `solutions_keywords/` directory for easy navigation
-- **Fresh results**: Each search clears previous results for clean organization
+```vim
+" Search for solutions containing specific terms
+:LC Keywords "dynamic programming, memoization"
 
----
+" Results appear as symlinks in solutions_keywords/
+```
 
-## Features in Detail
+### Fold Management
 
-### Syntax Highlighting
+The plugin sets up automatic folding:
 
-The plugin provides custom syntax highlighting for:
+- Metadata sections are foldable
+- Custom fold markers (`▼` and `▲` by default)
+- Automatic fold setup for solution files
+- Commands for bulk fold operations
 
-- Problem descriptions with color-coded sections
-- Example input/output blocks
-- Code snippets within problem descriptions
-- Tags and metadata in solution files
+## 🐛 Troubleshooting
 
-### Auto-folding Metadata
+### Common Issues
 
-Solution files include problem metadata as comments that are:
+1. **No problems found**: Run `:LC Pull` first to fetch problem data
+2. **Images not displaying**: Check terminal compatibility and image.nvim setup
+3. **Dependencies missing**: Ensure symlinks are working in your environment
+4. **Cache issues**: Delete `~/.cache/nvim/LeetNeoCode/` and re-run `:LC Pull`
 
-- Automatically folded when opening the file
-- Placed at the bottom of the file for minimal distraction
-- Contain problem number, title, difficulty, and LeetCode tags
-- Include a section for your own custom tags
+### Debug Commands
 
-### Image Rendering
+```vim
+" Check configuration
+:lua print(vim.inspect(require("LeetNeoCode").config))
 
-If you've set up image support:
+" Verify cache location
+:echo stdpath('cache') . '/LeetNeoCode'
 
-- Problem diagrams and illustrations display directly in Neovim
-- Images automatically resize based on your window dimensions
-- Rendering is optimized for Kitty-protocol compatible terminals
-- Images re-render when switching back to the window
+" Test image support
+:lua print(require("LeetNeoCode").images.is_terminal_supported())
+```
 
-### Multiple Languages
+## 🤝 Contributing
 
-The plugin supports all LeetCode-offered languages with:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-- Language-specific starter code templates
-- Appropriate file extensions and syntax highlighting
-- Language-specific include/import statements
-- Proper formatting configuration (.clang-format, .editorconfig, etc.)
+## 📝 License
 
-### Organization & File Structure
+This project is licensed under the MIT License.
 
-- **Zero-padded problem numbers**: All directories use format `LC00001_Problem_Name` for consistent sorting
-- **Automatic versioning**: Multiple solution attempts are numbered (`Solution_1.cpp`, `Solution_2.cpp`)
-- **Recent solutions tracking**: Configurable recent solutions directory for quick access to your latest work
-- **Keyword search organization**: Dedicated directory for keyword search results with symlinks to matching solutions
-- **Language-specific dependencies**: Automatic setup of include files, linters, and formatters per language
+## 🙏 Acknowledgments
 
----
-
-## License
-
-[The Unlicense](https://unlicense.org/) – public domain, no strings attached.
-
----
-
-## Contributions
-
-Contributions welcome :)
+- LeetCode for providing the platform and API
+- [image.nvim](https://github.com/3rd/image.nvim) for image rendering capabilities
+- The Neovim community for inspiration and support
