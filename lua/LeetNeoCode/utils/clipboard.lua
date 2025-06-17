@@ -10,9 +10,12 @@ end
 
 -- Copy text to clipboard with visual feedback
 function M.copy_with_feedback(text, flash_opts)
-  -- Copy to clipboard registers
-  vim.fn.setreg('"', text)
-  vim.fn.setreg("+", text)
+  -- Determine if this should be linewise based on content
+  local register_type = text:match("\\n$") and "l" or "c"
+
+  -- Copy to clipboard registers with proper type
+  vim.fn.setreg('"', text, register_type)
+  vim.fn.setreg("+", text, register_type)
 
   -- Use OSC-52 for remote terminal clipboard support
   M.set_clipboard(text)

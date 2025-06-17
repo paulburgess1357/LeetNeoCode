@@ -213,7 +213,7 @@ end
 
 -- Setup the custom yank behavior for LeetCode solution files
 function M.setup(config)
-  -- Setup highlight group
+  -- Setup highlight group (always, not just when smart_copy is true)
   M.setup_highlights(config)
 
   -- Always register the LC Copy command
