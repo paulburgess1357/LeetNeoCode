@@ -29,7 +29,9 @@ Checks: >
   -misc-unused-parameters,
   -readability-redundant-declaration,
   -misc-redundant-expression,
-  -readability-redundant-smartptr-get
+  -readability-redundant-smartptr-get,
+  -misc-non-private-member-variables-in-classes,
+  bugprone-easily-swappable-parameters,
 HeaderFilterRegex: ".*"
 FormatStyle: file
 CheckOptions:
