@@ -55,4 +55,5 @@ Diagnostics:
         readability-redundant-smartptr-get,
         misc-non-private-member-variables-in-classes,
         bugprone-easily-swappable-parameters,
+        readability-use-std-min-max,
       ]
