@@ -33,6 +33,8 @@ Checks: >
   -misc-non-private-member-variables-in-classes,
   -bugprone-easily-swappable-parameters,
   -readability-use-std-min-max,
+  -readability-math-missing-parentheses,
+  -bugprone-implicit-widening-of-multiplication-result,
 
 HeaderFilterRegex: ".*"
 FormatStyle: file
